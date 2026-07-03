@@ -1,0 +1,115 @@
+<mxfile host="app.diagrams.net" modified="2026-06-29T00:00:00.000Z" agent="Codex" version="24.7.17">
+  <diagram id="nursing-assignment-workflow" name="Nursing Assignment Workflow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1280" pageHeight="920" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Patient Assignment, Nursing Care and Handover Workflow" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1;fontColor=#111827;" vertex="1" parent="1">
+          <mxGeometry x="80" y="20" width="1120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-bg-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F6FA;strokeColor=#E5E7EB;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="180" height="800" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-bg-2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F6FA;strokeColor=#E5E7EB;" vertex="1" parent="1">
+          <mxGeometry x="230" y="70" width="180" height="800" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-bg-3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F6FA;strokeColor=#E5E7EB;" vertex="1" parent="1">
+          <mxGeometry x="420" y="70" width="180" height="800" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-bg-4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F6FA;strokeColor=#E5E7EB;" vertex="1" parent="1">
+          <mxGeometry x="610" y="70" width="180" height="800" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-bg-5" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F6FA;strokeColor=#E5E7EB;" vertex="1" parent="1">
+          <mxGeometry x="800" y="70" width="180" height="800" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-bg-6" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F6FA;strokeColor=#E5E7EB;" vertex="1" parent="1">
+          <mxGeometry x="990" y="70" width="180" height="800" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-head-1" value="Admission / Patient" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#5B6EFF;strokeColor=#5B6EFF;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="180" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-head-2" value="Head Nurse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#5B6EFF;strokeColor=#5B6EFF;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="70" width="180" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-head-3" value="Unit Nurse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#5B6EFF;strokeColor=#5B6EFF;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="70" width="180" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-head-4" value="Ward Nurse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#5B6EFF;strokeColor=#5B6EFF;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="610" y="70" width="180" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-head-5" value="Doctor / Escalation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#5B6EFF;strokeColor=#5B6EFF;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="70" width="180" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-head-6" value="Next Shift Ward Nurse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#5B6EFF;strokeColor=#5B6EFF;fontColor=#FFFFFF;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="990" y="70" width="180" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" value="1. Patient admitted in Ward / ICU" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5B6EFF;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="55" y="130" width="150" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="2. Assign patient to relevant unit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5B6EFF;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="245" y="200" width="150" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="3. Assign patient to available Ward Nurse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5B6EFF;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="435" y="270" width="150" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="4. Patient assessment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5B6EFF;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="625" y="350" width="150" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="5. Update vitals, medicine, notes and doctor orders" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5B6EFF;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="625" y="430" width="150" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="6. Inform Unit Nurse if issue found" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F59E0B;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="625" y="530" width="150" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="s7" value="7. Review issue" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#F59E0B;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="435" y="610" width="150" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="s8" value="8. Escalate to Doctor or Head Nurse if required" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#EF4444;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="815" y="610" width="150" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="s9" value="9. Submit shift handover" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5B6EFF;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="625" y="705" width="150" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="s10" value="10. Verify handover" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#5B6EFF;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="435" y="785" width="150" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="s11" value="11. Accept handover for next shift" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#16A34A;fontColor=#111827;fontStyle=1;spacing=10;" vertex="1" parent="1">
+          <mxGeometry x="1005" y="785" width="150" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s1" target="s2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s2" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s3" target="s4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s4" target="s5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s5" target="s6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s6" target="s7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="If required" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EF4444;strokeWidth=2;endArrow=block;endFill=1;fontColor=#EF4444;fontStyle=1;" edge="1" parent="1" source="s7" target="s8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="Resolved / continue care" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#16A34A;strokeWidth=2;endArrow=block;endFill=1;fontColor=#16A34A;fontStyle=1;" edge="1" parent="1" source="s7" target="s9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s8" target="s9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s9" target="s10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;endFill=1;" edge="1" parent="1" source="s10" target="s11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

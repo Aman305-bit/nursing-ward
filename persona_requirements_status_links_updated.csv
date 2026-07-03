@@ -1,0 +1,480 @@
+"Persona","Requirements","Status","Link"
+"ICU Head / Intensivist","As an ICU Head
+I want to see all ICU patients on one screen so that I can quickly identify critical patients
+
+UI Elements : 
+ICU occupancy
+Bed map
+Critical alerts
+Ventilator patients
+New admissions
+High risk patients","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center"
+"ICU Head / Intensivist","As an ICU Head
+I want to know which patients deteriorated overnight so that I can prioritize my rounds.
+
+UI Elements :
+Overnight events
+New alerts
+Critical lab values
+Escalated patients","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/critical-care/icu-round-2"
+"ICU Head / Intensivist","As an ICU Head
+I want a one-minute summary of every patient before ward rounds begin.
+
+UI Elements:
+Patient Summary Card
+Diagnosis
+Major events
+Current status
+Pending issues
+Latest investigations","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/critical-care/icu-round-2"
+"ICU Head / Intensivist","As an ICU Head
+I want to review ICU performance so that I can improve outcomes.
+
+UI Elements
+Mortality
+Infection rate
+Length of stay
+Bed utilization","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/analytics/clinical"
+"ICU Head / Intensivist","As an Intensivist
+I want all patients automatically organized for ICU rounds so that I can review 20-30 patients efficiently.
+
+Screen
+ICU Rounds Manager
+
+Outcome
+Reduce round preparation time by 50%
+
+UI Elements
+Patient List
+For each patient:
+Diagnosis
+Ventilator Status
+Overnight Events
+Pending Labs
+Pending Orders
+AI Summary","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/critical-care/icu-round-2"
+"ICU Head / Intensivist","As an Intensivist
+I want a structured ICU discharge process so that patients move safely to wards.
+
+Outcome
+Reduce transfer-related errors
+
+UI Elements
+Discharge Checklist
+Stability Assessment
+Medication Review
+Pending Investigations
+Follow-up Plan","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/discharges"
+"ICU Head / Intensivist","As an Intensivist
+I want to record and track family updates so that communication is documented.
+
+Outcome
+Reduce complaints and medico-legal disputes
+
+UI Elements
+Family Communication Log
+Date
+Attendees
+Discussion
+Questions Raised
+Consent Status","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/clinical-workspace/family-communication"
+"ICU Head / Intensivist","As an Intensivist
+I want the system to highlight deteriorating patients so that I can intervene early.
+
+Outcome
+Earlier intervention
+
+UI Elements
+High Risk Patients Widget
+Risk Factors
+Falling BP
+Rising Lactate
+Low Oxygen
+Increasing Vasopressor Need","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/clinical-intelligence/patient-risk-center"
+"ICU Head / Intensivist","As an ICU Head
+I want to compare all patients on one screen so that I know where attention is needed.
+Outcome
+Faster prioritization
+
+UI Elements
+ICU Heat Map
+
+Rows:
+Patients
+
+Columns:
+Risk
+Ventilation
+Infection
+Organ Failure
+Alert Count","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/smart-bed-view"
+"Resident Doctor","As a Resident Doctor
+I want to quickly locate my patient
+so that I can review the case.
+
+UI Elements
+Patient Search","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/search"
+"Resident Doctor","As a Resident Doctor
+I want to view the patient's complete timeline so that I understand what happened previously.
+
+UI Elements
+Timeline
+Admission
+Procedures
+Notes
+Labs
+Medications","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/timeline"
+"Resident Doctor","As a Resident Doctor
+I want to review vital signs trends so that I can identify deterioration.
+
+UI Elements
+Trend Charts
+HR
+BP
+SpO2
+Temperature","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/icu-001?tab=vital-graph"
+"Resident Doctor","As a Resident Doctor
+I want to enter progress notes so that care decisions are documented.
+
+UI Elements
+Notes","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/clinical-workspace/progress-notes"
+"Resident Doctor","As a Resident Doctor
+I want to place investigations and medication orders so that treatment can proceed.
+
+UI Elements
+Order Entry
+Labs
+Imaging
+Medications","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/clinical-workspace/doctor-order-entry"
+"Resident Doctor","As a Resident Doctor
+I want to hand over patients to the next shift so that no critical information is lost.
+
+Outcome
+Reduce communication errors
+
+UI
+Handover Summary
+Active Issues
+Pending Tests
+Escalation Risks
+To-Do List","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/shift-handover"
+"Resident Doctor","As a Resident Doctor
+I want to onboard a new ICU patient within minutes so that treatment can start immediately.
+
+Outcome
+Reduce admission delays
+
+UI
+ICU Admission Wizard
+Step 1
+Patient Identification
+Step 2
+Clinical Condition
+Step 3
+Current Devices
+Step 4
+Medications
+Step 5
+Risk Assessment","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/admissions"
+"Staff Nurse","As a Staff Nurse
+I want to see only my assigned patients so that I can focus on my responsibilities.
+
+
+UI
+Assigned Patient List","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/station"
+"Staff Nurse","As a Staff Nurse
+I want to know which medications are due so that I do not miss administration.
+
+UI 
+Medication Timeline
+Due
+Administered
+Missed","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/medication-administration"
+"Staff Nurse","As a Staff Nurse
+I want to record vitals quickly so that patient monitoring is up to date.
+
+UI
+Vital Entry Form","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/nurse-entry"
+"Staff Nurse","As a Staff Nurse
+I want to receive alerts for abnormal patient conditions so that I can escalate quickly.
+UI
+Alert Center","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/notifications-tasks"
+"Staff Nurse","As a Staff Nurse
+I want to document nursing assessments so that care records remain accurate.
+UI
+Assessment Forms","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/tasks-assessments"
+"Staff Nurse","As a Nurse
+I want to acknowledge and escalate alerts so that critical events are not missed.
+
+Outcome
+Reduce response times
+
+UI
+
+Alert Workflow
+
+New Alert
+↓
+Acknowledge
+↓
+Assign
+↓
+Resolve
+↓
+Close","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/notifications-tasks"
+"Staff Nurse","As a Nurse
+I want all pending tasks in one place so that nothing is forgotten.
+
+Outcome
+Improve compliance
+
+UI Elements
+Task Board
+Medication
+Lab Collection
+Procedure
+Assessment
+Escalation","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/tasks-assessments"
+"Nursing Supervisor","As a Nursing Supervisor
+I want to know nurse-to-patient ratios so that staffing remains safe.
+
+UI
+Workload Dashboard","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/station"
+"Nursing Supervisor","As a Nursing Supervisor
+I want to identify overdue nursing tasks so that patient care is not delayed.
+
+UI
+Task Compliance Dashboard","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/tasks-assessments"
+"Nursing Supervisor","As a Nursing Supervisor
+I want to review shift handovers so that information is transferred correctly.
+
+UI
+Handover Dashboard","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/nursing/shift-handover"
+"Nursing Supervisor","As a Nursing Supervisor
+I want visibility into critical alerts so that I can coordinate responses.
+
+UI
+Escalation Center","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/critical-care/escalation-center"
+"Hospital COO / Administrator","As a Hospital Administrator
+I want to know ICU occupancy so that I can optimize bed utilization.
+
+UI
+Occupancy Dashboard","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/executive-dashboard"
+"Hospital COO / Administrator","As a Hospital Administrator
+I want visibility into ICU demand so that I can plan admissions.
+
+
+UI
+Admission Forecast","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/admissions"
+"Hospital COO / Administrator","As a Hospital Administrator
+I want to understand ICU performance so that I can improve operations.
+
+UI
+Operations Dashboard","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/analytics/operational"
+"Hospital COO / Administrator","As a Hospital Administrator
+I want to know device utilization so that expensive equipment is not underused.
+
+UI
+Asset Dashboard","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/analytics/device"
+"Hospital COO / Administrator","As a Hospital Administrator
+I want measurable pilot outcomes so that I can decide on rollout.
+
+Outcome Dashboard
+Adoption Metrics
+2) Daily Active Users
+3) Nurses Using System
+4) Doctors Using System
+
+Efficiency Metrics
+1) Time to Find Information
+2) Time for Handover
+3) Time for Rounds
+
+Operational Metrics
+1) Bed Occupancy
+2) ICU LOS
+3) Readmissions
+
+Clinical Metrics
+1) Alert Response Time
+2) Medication Compliance
+3) Documentation Compliance","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/analytics/pilot-outcome"
+"Plasmit Admin","As a Plasmit Edge Device support  Engineer
+I want to know which devices stopped sending data so that I can fix issues immediately.
+
+Outcome
+Maintain data quality
+
+UI
+Connectivity Dashboard
+Device Status
+Last Data Received
+Failure Alerts","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/device-operations/connectivity-dashboard"
+"Plasmit Admin","Edge Device Management
+
+UI Components
+
+ICU Bed Map
+Bed 1 → Gateway Online
+Bed 2 → Gateway Online
+Bed 3 → Data Delayed
+Bed 4 → Device Offline
+
+Gateway Health
+CPU
+Memory
+Storage
+Temperature
+
+Connectivity Status
+Ventilator Connected
+Monitor Connected
+Infusion Pump Connected
+
+Last Data Received
+2 seconds ago
+30 seconds ago
+10 minutes ago","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/device-operations/edge-device-management"
+"Plasmit Admin","Device Mapping
+
+UI Components
+Bed Assignment
+
+Bed 5
+
+Patient XYZ
+
+Connected Devices:
+
+Philips Monitor
+GE Ventilator
+Syringe Pump
+
+
+Auto Discovery Panel
+New Device Detected
+Assign to:
+Patient
+Bed","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/device-operations/device-mapping"
+"Intensivist","AI Scribe
+
+Workflow
+Doctor speaks during rounds.
+
+System listens.
+
+System generates:
+Progress Note
+Assessment
+Plan
+
+UI Components
+Voice Recording
+Start Recording
+Stop Recording
+
+
+Transcript
+Real-time transcript.
+
+
+Generated Clinical Note
+Editable.
+
+
+Approve & Save
+Push into EMR.","No",""
+"Nursing Supervisor/Doctor","Discharge Summary Generator
+
+
+CU discharge summaries take significant physician effort.
+
+UI Components
+Auto Generated Summary
+Admission Diagnosis
+Major Events
+Ventilator Course
+Procedures
+Complications
+Medications
+Follow-Up
+
+
+Doctor Review
+Approve
+Edit
+Publish","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/discharges/discharge-ward-kabir/summary"
+"Remote Intensivist","Remote Command Center
+
+UI Components
+Multi Hospital View
+Hospital A
+Hospital B
+Hospital C
+
+
+ICU Census
+Patients across hospitals.
+
+
+Escalated Cases
+
+
+Requires attention.
+
+Live Risk Queue
+Highest risk first.","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/tele-icu/remote-command-center"
+"","Bedside Nurse
+↓
+Duty Doctor
+↓
+Consultant
+↓
+Remote Intensivist
+↓
+Medical Director
+
+
+UI Components
+Escalation Queue
+Open
+In Progress
+Resolved
+Closed
+
+
+Escalation Timeline
+Who acted.
+When acted.
+What action taken.","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/tele-icu/escalated-cases"
+"","Patient Risk Center
+
+UI Components
+High Risk Patients
+Deterioration Trends
+Predicted Escalations
+Clinical Explanation
+Why patient flagged.","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/clinical-intelligence/patient-risk-center"
+"","Smart Bed View
+
+UI Components
+Single patient.
+Single bed.
+
+Everything in one place.
+Vitals
+Ventilator
+Medications
+Labs
+Alerts
+Notes
+Timeline
+Plasmit cockpit for one ICU bed.","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/patients/smart-bed-view"
+"","Signal Health
+
+UI Components
+Missing Data
+Delayed Data
+Duplicate Data
+Device Errors
+Gateway Errors","Yes","https://plasmit-hospital-hms.vercel.app/icu-command-center/device-operations/signal-health"

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Early Warning Score</title>
+    <link rel="stylesheet" href="./globals.css" />
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <main id="main-content" class="app-shell" aria-busy="true">
+      <span id="clock" hidden></span>
+      <button id="printBtn" type="button" hidden>Print summary</button>
+
+      <section class="param-panel" aria-labelledby="param-title">
+        <div class="param-header">
+          <div>
+            <p class="instrument-eyebrow">ICU nursing screening</p>
+            <h2 class="param-title" id="param-title">Early Warning Score</h2>
+          </div>
+          <div class="param-completeness" id="paramCompleteness" role="status" aria-live="polite">
+            <div class="param-completeness-progress">
+              <span class="param-completeness-num" id="paramCompletenessNum">0</span>
+              <span class="param-completeness-total">/ <span id="paramCompletenessTotal">0</span></span>
+            </div>
+            <span class="param-completeness-label">Core parameters completed</span>
+          </div>
+        </div>
+        <div class="param-grid" id="paramGrid"></div>
+      </section>
+
+      <nav class="tab-nav" aria-label="Screening instruments">
+        <div class="tab-list" id="tabList" role="tablist" aria-label="Screening instruments and index"></div>
+      </nav>
+
+      <div id="tabPanels"></div>
+      <p class="live-status visually-hidden" id="liveStatus" aria-live="polite"></p>
+    </main>
+
+    <script src="./instruments.js"></script>
+    <script src="./app.js"></script>
+    <script>
+      window.PiMedCalInit && window.PiMedCalInit();
+      var shell = document.getElementById("main-content");
+      if (shell) shell.setAttribute("aria-busy", "false");
+    </script>
+  </body>
+</html>

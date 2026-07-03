@@ -1,0 +1,25 @@
+Plasmit Hospital
+ICU Investigation Report
+
+Patient: Rohan Das
+MRN: PLH-240338
+Bed: ICU-A02
+Age/Sex: 54/M
+Order ID: REQ-ICU-8842
+Report Type: Renal panel + Electrolytes
+Specimen: Serum
+Collected At: Today 10:05
+Ordered By: Dr. Neha Malik
+
+Height / Weight: 168 / 76 cm / kg
+
+Renal / Electrolytes
+Urea / Creatinine: 58 / 1.7 mg/dL
+Na+ / K+: 136 / 3.2 mmol/L
+Ca2+ / PO4 / Mg: 1.08 / 4.4 / 1.8 mmol/L / mg/dL
+
+ABG / Lactate Addendum
+Lactate: 2.6 mmol/L
+
+Comment:
+Renal dose review and potassium correction advised. Repeat electrolyte panel as clinically indicated.

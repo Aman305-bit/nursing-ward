@@ -1,0 +1,468 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 5682 >>
+stream
+BT
+/F1 10 Tf
+/F1 16 Tf
+1 0 0 1 48 792 Tm
+(Admission Module - Frontend Patch Report) Tj
+/F1 10 Tf
+1 0 0 1 48 775 Tm
+(Generated: 22 May 2026, 05:32 PM) Tj
+/F1 10 Tf
+1 0 0 1 48 762 Tm
+(Project: Plasmit Hospital HMS) Tj
+/F1 10 Tf
+1 0 0 1 48 749 Tm
+(Scope: Admission module only, frontend/localStorage functional preview.) Tj
+/F1 10 Tf
+1 0 0 1 48 736 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 723 Tm
+(1. Summary) Tj
+/F1 10 Tf
+1 0 0 1 48 706 Tm
+(This report lists the Admission-related files created/updated and the functional frontend ) Tj
+/F1 10 Tf
+1 0 0 1 48 693 Tm
+(workflow implemented. The module is built as a role-wise admission workflow inspired by the ) Tj
+/F1 10 Tf
+1 0 0 1 48 680 Tm
+(Admission_Module_All_Screens.pdf reference.) Tj
+/F1 10 Tf
+1 0 0 1 48 667 Tm
+(No backend API, database, real authentication, or server-side admission persistence is included.) Tj
+/F1 10 Tf
+1 0 0 1 48 654 Tm
+( Current persistence is browser localStorage only.) Tj
+/F1 10 Tf
+1 0 0 1 48 641 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 628 Tm
+(2. Admission Routes Created) Tj
+/F1 10 Tf
+1 0 0 1 48 611 Tm
+(- src/app/\(app\)/admission/page.tsx | /admission | Admin workflow overview) Tj
+/F1 10 Tf
+1 0 0 1 48 598 Tm
+(- src/app/\(app\)/admission/reception/page.tsx | /admission/reception | Reception patient lookup) Tj
+/F1 10 Tf
+1 0 0 1 48 585 Tm
+(- src/app/\(app\)/admission/doctor/page.tsx | /admission/doctor | Doctor admission order) Tj
+/F1 10 Tf
+1 0 0 1 48 572 Tm
+(- src/app/\(app\)/admission/admission-desk/page.tsx | /admission/admission-desk | Admission desk ) Tj
+/F1 10 Tf
+1 0 0 1 48 559 Tm
+(request queue) Tj
+/F1 10 Tf
+1 0 0 1 48 546 Tm
+(- src/app/\(app\)/admission/billing/page.tsx | /admission/billing | Billing and insurance ) Tj
+/F1 10 Tf
+1 0 0 1 48 533 Tm
+(clearance) Tj
+/F1 10 Tf
+1 0 0 1 48 520 Tm
+(- src/app/\(app\)/admission/bed-manager/page.tsx | /admission/bed-manager | Bed manager and ) Tj
+/F1 10 Tf
+1 0 0 1 48 507 Tm
+(allotment) Tj
+/F1 10 Tf
+1 0 0 1 48 494 Tm
+(- src/app/\(app\)/admission/nurse-receive/page.tsx | /admission/nurse-receive | Nurse receive ) Tj
+/F1 10 Tf
+1 0 0 1 48 481 Tm
+(patient) Tj
+/F1 10 Tf
+1 0 0 1 48 468 Tm
+(- src/app/\(app\)/admission/nurse-care/page.tsx | /admission/nurse-care | Nurse patient care) Tj
+/F1 10 Tf
+1 0 0 1 48 455 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 442 Tm
+(3. Admission Feature Files Created/Updated) Tj
+/F1 10 Tf
+1 0 0 1 48 425 Tm
+(- src/features/admission/types.ts: Shared Admission TypeScript types: screens, priorities, ) Tj
+/F1 10 Tf
+1 0 0 1 48 412 Tm
+(requests, beds, billing, nurse records, activities, and store state.) Tj
+/F1 10 Tf
+1 0 0 1 48 399 Tm
+(- src/features/admission/data/admission-data.ts: Static screen config, patients, requests, ) Tj
+/F1 10 Tf
+1 0 0 1 48 386 Tm
+(billing clearances, 100 generated beds, checklist, and workflow card metadata.) Tj
+/F1 10 Tf
+1 0 0 1 48 373 Tm
+(- src/features/admission/admission-store.ts: Client-side state store using localStorage. ) Tj
+/F1 10 Tf
+1 0 0 1 48 360 Tm
+(Provides actions for patient scenario, doctor order, request status, billing review, bed ) Tj
+/F1 10 Tf
+1 0 0 1 48 347 Tm
+(allotment, nurse receive, care start, and reset demo.) Tj
+/F1 10 Tf
+1 0 0 1 48 334 Tm
+(- src/features/admission/pages/admission-pages.tsx: Page-level composition for every Admission ) Tj
+/F1 10 Tf
+1 0 0 1 48 321 Tm
+(route, wrapping each screen in the shared Admission layout.) Tj
+/F1 10 Tf
+1 0 0 1 48 308 Tm
+(- src/features/admission/components/admission-screen-layout.tsx: Shared Admission page header, ) Tj
+/F1 10 Tf
+1 0 0 1 48 295 Tm
+(role tabs, workspace description, chips, and step navigation.) Tj
+/F1 10 Tf
+1 0 0 1 48 282 Tm
+(- src/features/admission/components/admission-status-badge.tsx: Reusable status badge tone ) Tj
+/F1 10 Tf
+1 0 0 1 48 269 Tm
+(mapping for request, priority, billing, bed, and workflow states.) Tj
+/F1 10 Tf
+1 0 0 1 48 256 Tm
+(- src/features/admission/components/admission-fields.tsx: Reusable field wrappers, input, ) Tj
+/F1 10 Tf
+1 0 0 1 48 243 Tm
+(select, and textarea helpers retained for Admission forms.) Tj
+/F1 10 Tf
+1 0 0 1 48 230 Tm
+(- src/features/admission/components/patient-lookup-workspace.tsx: Reception workspace: patient ) Tj
+/F1 10 Tf
+1 0 0 1 48 217 Tm
+(search/select, old patient re-admission, new patient, emergency unknown patient, continue to ) Tj
+/F1 10 Tf
+1 0 0 1 48 204 Tm
+(doctor order.) Tj
+/F1 10 Tf
+1 0 0 1 48 191 Tm
+(- src/features/admission/components/doctor-admission-order.tsx: Doctor workspace: patient ) Tj
+/F1 10 Tf
+1 0 0 1 48 178 Tm
+(prefill, source, doctor, type, ward, priority, instructions, submit admission request.) Tj
+/F1 10 Tf
+1 0 0 1 48 165 Tm
+(- src/features/admission/components/admission-requests-workspace.tsx: Admission Desk workspace: ) Tj
+/F1 10 Tf
+1 0 0 1 48 152 Tm
+(search/filter queue, verify request, billing hold, send to bed allotment.) Tj
+/F1 10 Tf
+1 0 0 1 48 139 Tm
+(- src/features/admission/components/billing-clearance-workspace.tsx: Billing workspace: live ) Tj
+/F1 10 Tf
+1 0 0 1 48 126 Tm
+(pending/high-risk/estimate metrics, clear billing, apply billing hold.) Tj
+/F1 10 Tf
+1 0 0 1 48 113 Tm
+(- src/features/admission/components/bed-manager-workspace.tsx: Bed Manager workspace: 100-bed ) Tj
+/F1 10 Tf
+1 0 0 1 48 100 Tm
+(search/filter/status/ward view, active request selector, selected bed panel, allot available ) Tj
+/F1 10 Tf
+1 0 0 1 48 87 Tm
+(bed.) Tj
+/F1 10 Tf
+1 0 0 1 48 74 Tm
+(- src/features/admission/components/nurse-receive-workspace.tsx: Nurse Receive workspace: select) Tj
+/F1 10 Tf
+1 0 0 1 48 61 Tm
+( ready patient, received by/time, identity/order/bed checklist, confirm patient received.) Tj
+/F1 10 Tf
+1 0 0 1 48 48 Tm
+(- src/features/admission/components/nurse-care-workspace.tsx: Nurse Care workspace: select ) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 5229 >>
+stream
+BT
+/F1 10 Tf
+/F1 10 Tf
+1 0 0 1 48 792 Tm
+(received patient, record BP/pulse/temperature/notes, start patient care.) Tj
+/F1 10 Tf
+1 0 0 1 48 779 Tm
+(- src/features/admission/components/admin-workflow-overview.tsx: Admin overview: live metrics, ) Tj
+/F1 10 Tf
+1 0 0 1 48 766 Tm
+(workflow cards, activity log, reset demo, embedded reception lookup.) Tj
+/F1 10 Tf
+1 0 0 1 48 753 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 740 Tm
+(4. Existing File Updated for Admission Menu) Tj
+/F1 10 Tf
+1 0 0 1 48 723 Tm
+(- src/data/navigation.ts: Admission sidebar menu updated with PDF-based children: Admin ) Tj
+/F1 10 Tf
+1 0 0 1 48 710 Tm
+(Overview, Reception, Doctor Order, Admission Desk, Billing Clearance, Bed Manager, Nurse ) Tj
+/F1 10 Tf
+1 0 0 1 48 697 Tm
+(Receive, Nurse Care.) Tj
+/F1 10 Tf
+1 0 0 1 48 684 Tm
+(  Note: Non-admission role-login/sidebar filtering changes were reverted as requested. Current ) Tj
+/F1 10 Tf
+1 0 0 1 48 671 Tm
+(navigation change is only the Admission menu entry.) Tj
+/F1 10 Tf
+1 0 0 1 48 658 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 645 Tm
+(5. Functional Frontend Flow) Tj
+/F1 10 Tf
+1 0 0 1 48 628 Tm
+(- Reception selects patient or creates a new/emergency scenario. This writes selectedPatientId ) Tj
+/F1 10 Tf
+1 0 0 1 48 615 Tm
+(and selectedScenario into Admission localStorage state.) Tj
+/F1 10 Tf
+1 0 0 1 48 602 Tm
+(- Doctor submits an admission order. This creates a new request and matching billing clearance, ) Tj
+/F1 10 Tf
+1 0 0 1 48 589 Tm
+(then marks it as active.) Tj
+/F1 10 Tf
+1 0 0 1 48 576 Tm
+(- Admission Desk can verify requests, place billing hold, or open the active request in Bed ) Tj
+/F1 10 Tf
+1 0 0 1 48 563 Tm
+(Manager.) Tj
+/F1 10 Tf
+1 0 0 1 48 550 Tm
+(- Billing can clear a pending clearance or apply hold. Request status updates accordingly.) Tj
+/F1 10 Tf
+1 0 0 1 48 537 Tm
+(- Bed Manager can search/filter 100 beds, select an active request, and reserve an available ) Tj
+/F1 10 Tf
+1 0 0 1 48 524 Tm
+(bed. Request moves to Ready for Nursing.) Tj
+/F1 10 Tf
+1 0 0 1 48 511 Tm
+(- Nurse Receive completes received-by, received-time, and checklist. Request moves to Received.) Tj
+/F1 10 Tf
+1 0 0 1 48 498 Tm
+(- Nurse Care records initial vitals and notes. Request moves to Care Started.) Tj
+/F1 10 Tf
+1 0 0 1 48 485 Tm
+(- Admin Overview reads the same store and shows live metrics, workflow status, and activity ) Tj
+/F1 10 Tf
+1 0 0 1 48 472 Tm
+(history.) Tj
+/F1 10 Tf
+1 0 0 1 48 459 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 446 Tm
+(6. Store Actions Added) Tj
+/F1 10 Tf
+1 0 0 1 48 429 Tm
+(- resetDemo\(\) - resets Admission frontend demo state.) Tj
+/F1 10 Tf
+1 0 0 1 48 416 Tm
+(- selectPatient\(patientId\) - selects patient for Reception/Doctor flow.) Tj
+/F1 10 Tf
+1 0 0 1 48 403 Tm
+(- startScenario\(scenario\) - starts old/new/emergency admission scenario.) Tj
+/F1 10 Tf
+1 0 0 1 48 390 Tm
+(- submitDoctorOrder\(input\) - creates admission request and billing clearance.) Tj
+/F1 10 Tf
+1 0 0 1 48 377 Tm
+(- updateRequestStatus\(requestId, status\) - changes desk/request status.) Tj
+/F1 10 Tf
+1 0 0 1 48 364 Tm
+(- reviewBilling\(input\) - clears or holds billing clearance and updates linked request.) Tj
+/F1 10 Tf
+1 0 0 1 48 351 Tm
+(- setActiveRequest\(requestId\) - sets current workflow request.) Tj
+/F1 10 Tf
+1 0 0 1 48 338 Tm
+(- allotBed\(bedId, requestId\) - reserves available bed and marks request Ready for Nursing.) Tj
+/F1 10 Tf
+1 0 0 1 48 325 Tm
+(- confirmReceive\(record\) - records nurse handover and marks request Received.) Tj
+/F1 10 Tf
+1 0 0 1 48 312 Tm
+(- startCare\(record\) - records vitals/care notes and marks request Care Started.) Tj
+/F1 10 Tf
+1 0 0 1 48 299 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 286 Tm
+(7. Important Technical Notes) Tj
+/F1 10 Tf
+1 0 0 1 48 269 Tm
+(- All interactive workflow state is frontend-only and stored under localStorage key: plasmit-) Tj
+/F1 10 Tf
+1 0 0 1 48 256 Tm
+(admission-frontend-state-v1.) Tj
+/F1 10 Tf
+1 0 0 1 48 243 Tm
+(- The store initializes with deterministic server-safe defaults, then loads browser localStorage) Tj
+/F1 10 Tf
+1 0 0 1 48 230 Tm
+( after hydration.) Tj
+/F1 10 Tf
+1 0 0 1 48 217 Tm
+(- No changes were made to backend APIs because this project currently has no backend admission ) Tj
+/F1 10 Tf
+1 0 0 1 48 204 Tm
+(service wired here.) Tj
+/F1 10 Tf
+1 0 0 1 48 191 Tm
+(- The module uses existing project UI primitives: Button, Card, Badge, Input, DataTable, ) Tj
+/F1 10 Tf
+1 0 0 1 48 178 Tm
+(AlertBanner, and shell PageHeader.) Tj
+/F1 10 Tf
+1 0 0 1 48 165 Tm
+(- Admission routes were smoke-tested on port 3004 and returned HTTP 200.) Tj
+/F1 10 Tf
+1 0 0 1 48 152 Tm
+(- npm run typecheck passed after the Admission updates.) Tj
+/F1 10 Tf
+1 0 0 1 48 139 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 126 Tm
+(8. Patch-Style High Level Diff) Tj
+/F1 10 Tf
+1 0 0 1 48 109 Tm
+(+ Added src/features/admission/admission-store.ts for shared localStorage workflow state.) Tj
+/F1 10 Tf
+1 0 0 1 48 96 Tm
+(+ Extended src/features/admission/types.ts with billing status, scenario, nurse records, ) Tj
+/F1 10 Tf
+1 0 0 1 48 83 Tm
+(activities, and store state.) Tj
+/F1 10 Tf
+1 0 0 1 48 70 Tm
+(+ Rebuilt Admission route wrappers under src/app/\(app\)/admission/**.) Tj
+/F1 10 Tf
+1 0 0 1 48 57 Tm
+(+ Added/updated role-wise Admission components for Reception, Doctor, Desk, Billing, Bed ) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 1762 >>
+stream
+BT
+/F1 10 Tf
+/F1 10 Tf
+1 0 0 1 48 792 Tm
+(Manager, Nurse Receive, Nurse Care, and Admin Overview.) Tj
+/F1 10 Tf
+1 0 0 1 48 779 Tm
+(+ Added 100-bed generated inventory in src/features/admission/data/admission-data.ts.) Tj
+/F1 10 Tf
+1 0 0 1 48 766 Tm
+(+ Updated src/data/navigation.ts only to expose the Admission submenu hierarchy.) Tj
+/F1 10 Tf
+1 0 0 1 48 753 Tm
+(- Removed old Admission implementation from earlier workflow before rebuilding PDF-based ) Tj
+/F1 10 Tf
+1 0 0 1 48 740 Tm
+(structure.) Tj
+/F1 10 Tf
+1 0 0 1 48 727 Tm
+(- Removed later non-admission role-login/sidebar guard experiment after instruction to keep ) Tj
+/F1 10 Tf
+1 0 0 1 48 714 Tm
+(changes inside Admission module.) Tj
+/F1 10 Tf
+1 0 0 1 48 701 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 688 Tm
+(9. Verification) Tj
+/F1 10 Tf
+1 0 0 1 48 671 Tm
+(- npm run typecheck: PASS) Tj
+/F1 10 Tf
+1 0 0 1 48 658 Tm
+(- GET /admission: 200) Tj
+/F1 10 Tf
+1 0 0 1 48 645 Tm
+(- GET /admission/reception: 200) Tj
+/F1 10 Tf
+1 0 0 1 48 632 Tm
+(- GET /admission/doctor: 200) Tj
+/F1 10 Tf
+1 0 0 1 48 619 Tm
+(- GET /admission/admission-desk: 200) Tj
+/F1 10 Tf
+1 0 0 1 48 606 Tm
+(- GET /admission/billing: 200) Tj
+/F1 10 Tf
+1 0 0 1 48 593 Tm
+(- GET /admission/bed-manager: 200) Tj
+/F1 10 Tf
+1 0 0 1 48 580 Tm
+(- GET /admission/nurse-receive: 200) Tj
+/F1 10 Tf
+1 0 0 1 48 567 Tm
+(- GET /admission/nurse-care: 200) Tj
+/F1 10 Tf
+1 0 0 1 48 554 Tm
+() Tj
+/F1 12 Tf
+1 0 0 1 48 541 Tm
+(10. Suggested Handoff) Tj
+/F1 10 Tf
+1 0 0 1 48 524 Tm
+(Give this PDF with the code patch when explaining what was created. For real production ) Tj
+/F1 10 Tf
+1 0 0 1 48 511 Tm
+(integration, backend APIs, database tables, authentication permissions, server validation, and ) Tj
+/F1 10 Tf
+1 0 0 1 48 498 Tm
+(audit logs should be added later.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R 7 0 R] /Count 3 >>
+endobj
+9 0 obj
+<< /Type /Catalog /Pages 8 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000005813 00000 n 
+0000005939 00000 n 
+0000011220 00000 n 
+0000011346 00000 n 
+0000013160 00000 n 
+0000013286 00000 n 
+0000013355 00000 n 
+trailer
+<< /Size 10 /Root 9 0 R >>
+startxref
+13404
+%%EOF
