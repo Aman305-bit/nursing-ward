@@ -90,6 +90,7 @@ export const nursingRolePermissions: Record<NursingRoleKey, NursingRolePermissio
       "/icu-command-center/nursing/nurse-entry",
       "/icu-command-center/nursing/intake-output",
       "/icu-command-center/nursing/medicine-receive-verify",
+      "/icu-command-center/nursing/order",
       "/icu-command-center/nursing/medication-administration",
       "/icu-command-center/nursing/early-warning-score",
       "/icu-command-center/nursing/shift-handover",
@@ -109,6 +110,7 @@ export const nursingRolePermissions: Record<NursingRoleKey, NursingRolePermissio
       ]),
       navChild("ward-nurse-work", "Nursing Work", "/icu-command-center/nursing/medication-administration?patientId=icu-001", [
         navChild("ward-nurse-medication-receive", "Medicine Receive & Verify", "/icu-command-center/nursing/medicine-receive-verify?patientId=icu-001"),
+        navChild("ward-nurse-order", "Order", "/icu-command-center/nursing/order"),
         navChild("ward-nurse-medication", "Medicine Administration", "/icu-command-center/nursing/medication-administration?patientId=icu-001"),
         navChild("ward-nurse-notes", "Nursing Notes", "/icu-command-center/nursing/nursing-notes"),
       ]),

@@ -24,6 +24,7 @@
     "framer-motion": "latest",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "lucide-react": "latest",
     "next": "latest",
     "react": "latest",

@@ -592,22 +592,25 @@ export function IcuCommandCenterPatientPage({
   return (
     <div className="min-w-0 max-w-full space-y-4 pb-8">
       {patient ? (
-        <section className="overflow-x-auto rounded-2xl border border-sky-100 bg-gradient-to-r from-sky-50 via-white to-blue-50 px-4 py-3 shadow-[0_14px_32px_rgba(15,23,42,0.05)]">
-          <div className="flex min-w-max items-center gap-3 text-sm font-semibold text-slate-700">
-            <span className="pr-1 text-base font-bold text-slate-950">{patient.patientName}</span>
+        <section
+          className="overflow-x-auto rounded-xl border border-[#7367f0]/40 px-4 py-3 text-white shadow-[0_8px_20px_rgba(115,103,240,0.24)]"
+          style={{ background: "linear-gradient(90deg,#7367f0,#5b8def)" }}
+        >
+          <div className="flex min-w-max items-center gap-3 text-sm font-semibold text-white/85">
+            <span className="pr-1 text-base font-bold text-white">{patient.patientName}</span>
             <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 shadow-sm">
               {patient.criticalityScore >= 8 ? "Urgent" : patient.currentStatus}
             </span>
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">MR: {patient.mrn}</span>
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">Age/Sex: {patient.ageGender}</span>
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">Bed: {patient.bedNo}</span>
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">Unit: {patient.unit}</span>
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">Doctor: {patient.admittingDoctor}</span>
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 shadow-sm">Nurse: {patient.assignedWardNurse}</span>
-            <Link className="inline-flex h-9 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 shadow-sm transition duration-150 hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700" href="/icu-command-center">
+            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">MR: {patient.mrn}</span>
+            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Age/Sex: {patient.ageGender}</span>
+            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Bed: {patient.bedNo}</span>
+            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Unit: {patient.unit}</span>
+            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Doctor: {patient.admittingDoctor}</span>
+            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Nurse: {patient.assignedWardNurse}</span>
+            <Link className="inline-flex h-9 items-center justify-center rounded-xl border border-white/25 bg-white/15 px-4 text-xs font-semibold text-white shadow-sm transition duration-150 hover:bg-white/25" href="/icu-command-center">
               Back
             </Link>
-            <Link className="inline-flex h-9 items-center justify-center rounded-xl border border-blue-600 bg-blue-600 px-4 text-xs font-semibold text-white shadow-[0_10px_22px_rgba(37,99,235,0.18)] transition duration-150 hover:bg-blue-700" href={icuPatientDailyChartHref(patient.id)}>
+            <Link className="inline-flex h-9 items-center justify-center rounded-xl border border-white/30 bg-white px-4 text-xs font-semibold text-[#7367f0] shadow-sm transition duration-150 hover:bg-white/90" href={icuPatientDailyChartHref(patient.id)}>
               ICU Daily Chart
             </Link>
           </div>
@@ -7524,7 +7527,7 @@ function WardNurseAssignedPatientsCommand({ patients }: { patients: IcuPatient[]
           <table className="w-full min-w-[1320px] border-collapse bg-white text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-950">
               <tr>
-                <th className="w-[220px] px-5 py-3.5 text-left">Patient / Bed</th>
+                <th className="sticky left-0 z-30 w-[220px] bg-slate-50 px-5 py-3.5 text-left shadow-[8px_0_14px_-16px_rgba(15,23,42,0.55)]">Patient / Bed</th>
                 <th className="w-[170px] px-3 py-3.5 text-center">Profile Verification</th>
                 <th className="w-[190px] px-3 py-3.5 text-center">Assessment / Vitals</th>
                 <th className="w-[160px] px-3 py-3.5 text-center">Medication</th>
@@ -7545,7 +7548,7 @@ function WardNurseAssignedPatientsCommand({ patients }: { patients: IcuPatient[]
 
                 return (
                   <tr className="border-b border-slate-200 align-middle last:border-b-0 hover:bg-slate-50/70" key={row.patient.id}>
-                    <td className={cn("border-r border-slate-200 px-5 py-4", "border-l-4", wardNurseRowAccentClass(patientDashboardTone(row.patient)))}>
+                    <td className={cn("sticky left-0 z-20 border-r border-slate-200 bg-white px-5 py-4 shadow-[8px_0_14px_-16px_rgba(15,23,42,0.55)]", "border-l-4", wardNurseRowAccentClass(patientDashboardTone(row.patient)))}>
                       <Link className="block rounded-md p-1 transition hover:bg-white hover:shadow-sm" href={icuPatientDetailHref(row.patient.id, "overview")}>
                         <p className={cn("truncate text-base font-black", dashboardToneTextClass(patientDashboardTone(row.patient)))}>{row.patient.patientName}</p>
                         <p className="mt-2 truncate text-sm font-black text-slate-950">{row.patient.bedNo} | {activeWardUnit}</p>
@@ -7580,7 +7583,7 @@ function WardNurseAssignedPatientsCommand({ patients }: { patients: IcuPatient[]
                       <WardNurseQueueCell
                         disabled={!profileVerified}
                         detail={row.activeOrders[0]?.instruction ?? row.activeTasks[0]?.title ?? "No open order"}
-                        href={icuPatientDetailHref(row.patient.id, "orders", undefined, "ordersTab=pending-work&locked=1")}
+                        href={`/icu-command-center/nursing/order?patientId=${row.patient.id}&locked=1`}
                         title={row.activeOrders.length + row.activeTasks.length ? `${row.activeOrders.length + row.activeTasks.length} item(s)` : "Clear"}
                         tone={orderTone}
                       />
@@ -7613,9 +7616,9 @@ function WardNurseAssignedPatientsCommand({ patients }: { patients: IcuPatient[]
                         />
                         <WardNurseRoundAction
                           disabled={!profileVerified}
-                          href={`/icu-command-center/nursing/shift-handover?patientId=${row.patient.id}&focus=issue&locked=1`}
+                          href={icuPatientDetailHref(row.patient.id, "collaborate", undefined, "action=raise-unit-issue&locked=1")}
                           icon={ExternalLink}
-                          label="Handover"
+                          label="Raise Issue"
                         />
                       </div>
                     </td>
@@ -21277,16 +21280,19 @@ function NurseVitalsEntryForm() {
 
   return (
     <div className="min-w-0 space-y-3">
-      <div className="max-w-full overflow-x-auto rounded-md border border-[#dcd8ff] bg-gradient-to-r from-[#7064EC] via-[#6878E8] to-[#6888E8] px-4 py-3 text-white shadow-sm">
-        <div className="flex min-w-max items-center gap-6 text-sm font-semibold">
-          <span className="text-base font-bold">{selectedPatient?.patientName ?? "Patient not selected"}</span>
-          <span className="rounded-full border border-white/35 bg-white/15 px-2.5 py-1 text-xs">{riskLevel}</span>
-          <span>MR: {selectedPatient?.mrn ?? "-"}</span>
-          <span>Age/Sex: {selectedPatient?.ageGender ?? "-"}</span>
-          <span>Bed: {selectedPatient?.bedNo ?? "-"}</span>
-          <span>Unit: {selectedPatient?.unit ?? "-"}</span>
-          <span>Doctor: {selectedPatient?.admittingDoctor ?? "-"}</span>
-          <span>Nurse: {recordedBy}</span>
+      <div
+        className="max-w-full overflow-x-auto rounded-xl border border-[#7367f0]/40 px-4 py-3 text-white shadow-[0_8px_20px_rgba(115,103,240,0.24)]"
+        style={{ background: "linear-gradient(90deg,#7367f0,#5b8def)" }}
+      >
+        <div className="flex min-w-max items-center gap-6 text-sm font-semibold text-white/90">
+          <span className="text-base font-bold text-white">{selectedPatient?.patientName ?? "Patient not selected"}</span>
+          <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-bold uppercase text-red-700">{riskLevel}</span>
+          <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">MR: {selectedPatient?.mrn ?? "-"}</span>
+          <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Age/Sex: {selectedPatient?.ageGender ?? "-"}</span>
+          <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Bed: {selectedPatient?.bedNo ?? "-"}</span>
+          <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Unit: {selectedPatient?.unit ?? "-"}</span>
+          <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Doctor: {selectedPatient?.admittingDoctor ?? "-"}</span>
+          <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Nurse: {recordedBy}</span>
         </div>
       </div>
 
