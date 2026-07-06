@@ -94,30 +94,30 @@ export const nursingRolePermissions: Record<NursingRoleKey, NursingRolePermissio
       "/icu-command-center/nursing/medication-administration",
       "/icu-command-center/nursing/early-warning-score",
       "/icu-command-center/nursing/shift-handover",
+      "/icu-command-center/nursing/shift-pending-summary",
+      "/icu-command-center/nursing/raise-issue",
       "/icu-command-center/nursing/tasks-assessments",
       "/icu-command-center/patients/*",
     ],
     patientTabs: ["overview", "monitoring", "orders", "events", "shift-summary", "collaborate"],
     navigation: [
-      navChild("ward-nurse-patients", "My Patients", "/icu-command-center/clinical-workspace/patient-overview", [
-        navChild("ward-nurse-assigned", "My Assigned Patients", "/icu-command-center/clinical-workspace/patient-overview"),
-      ]),
-      navChild("ward-nurse-documentation", "Bedside Documentation", "/icu-command-center/nursing/nurse-entry?patientId=icu-001", [
-        navChild("ward-nurse-entry", "Nurse Entry", "/icu-command-center/nursing/nurse-entry?patientId=icu-001"),
-        navChild("ward-nurse-ews", "Early Warning Score", "/icu-command-center/nursing/early-warning-score?patientId=icu-001"),
-        navChild("ward-nurse-io", "Intake / Output Update", "/icu-command-center/nursing/intake-output?patientId=icu-001"),
+      navChild("ward-nurse-assigned", "My Assigned Patients", "/icu-command-center/clinical-workspace/patient-overview"),
+      navChild("ward-nurse-documentation", "Bedside Documentation", "/icu-command-center/nursing/nurse-entry", [
+        navChild("ward-nurse-entry", "Nurse Entry", "/icu-command-center/nursing/nurse-entry"),
+        navChild("ward-nurse-ews", "Early Warning Score", "/icu-command-center/nursing/early-warning-score"),
+        navChild("ward-nurse-io", "Intake / Output Update", "/icu-command-center/nursing/intake-output"),
         navChild("ward-nurse-events", "Patient Event Update", "/icu-command-center/patients/icu-001?tab=events"),
       ]),
-      navChild("ward-nurse-work", "Nursing Work", "/icu-command-center/nursing/medication-administration?patientId=icu-001", [
-        navChild("ward-nurse-medication-receive", "Medicine Receive & Verify", "/icu-command-center/nursing/medicine-receive-verify?patientId=icu-001"),
+      navChild("ward-nurse-work", "Nursing Work", "/icu-command-center/nursing/medication-administration", [
+        navChild("ward-nurse-medication-receive", "Medicine Receive & Verify", "/icu-command-center/nursing/medicine-receive-verify"),
         navChild("ward-nurse-order", "Order", "/icu-command-center/nursing/order"),
-        navChild("ward-nurse-medication", "Medicine Administration", "/icu-command-center/nursing/medication-administration?patientId=icu-001"),
+        navChild("ward-nurse-medication", "Medicine Administration", "/icu-command-center/nursing/medication-administration"),
         navChild("ward-nurse-notes", "Nursing Notes", "/icu-command-center/nursing/nursing-notes"),
       ]),
-      navChild("ward-nurse-handover", "Handover", "/icu-command-center/nursing/shift-handover?patientId=icu-001", [
-        navChild("ward-nurse-submit-handover", "Submit Shift Handover", "/icu-command-center/nursing/shift-handover?patientId=icu-001"),
-        navChild("ward-nurse-pending-summary", "Shift Pending Summary", "/icu-command-center/patients/icu-001?tab=shift-summary"),
-        navChild("ward-nurse-raise-issue", "Raise Issue to Unit Nurse", "/icu-command-center/patients/icu-001?tab=collaborate&action=raise-unit-issue"),
+      navChild("ward-nurse-handover", "Handover", "/icu-command-center/nursing/shift-handover", [
+        navChild("ward-nurse-submit-handover", "Submit Shift Handover", "/icu-command-center/nursing/shift-handover"),
+        navChild("ward-nurse-pending-summary", "Shift Pending Summary", "/icu-command-center/nursing/shift-pending-summary"),
+        navChild("ward-nurse-raise-issue", "Raise Issue to Unit Nurse", "/icu-command-center/nursing/raise-issue"),
       ]),
     ],
   },

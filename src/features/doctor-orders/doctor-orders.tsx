@@ -70,6 +70,29 @@ function assignedWardPatients() {
   return icuPatients.filter((patient) => patient.assignedWardNurse === wardNurseName);
 }
 
+function OrderPatientStrip({ patient }: { patient: IcuPatient }) {
+  return (
+    <div className="overflow-x-auto rounded-xl border border-blue-200 bg-gradient-to-r from-[#7467f0] to-[#4f86f7] px-4 py-3 text-white shadow-sm">
+      <div className="flex min-w-max items-center gap-3">
+        <span className="text-base font-bold">{patient.patientName}</span>
+        <span className="rounded-full border border-white/35 bg-white/15 px-3 py-1 text-xs font-bold">MR: {patient.mrn}</span>
+        <span className="rounded-full border border-white/35 bg-white/15 px-3 py-1 text-xs font-bold">Age/Sex: {patient.ageGender}</span>
+        <span className="rounded-full border border-white/35 bg-white/15 px-3 py-1 text-xs font-bold">Bed: {patient.bedNo}</span>
+        <span className="rounded-full border border-white/35 bg-white/15 px-3 py-1 text-xs font-bold">Unit: {patient.unit}</span>
+        <span className="rounded-full border border-white/35 bg-white/15 px-3 py-1 text-xs font-bold">Doctor: {patient.dutyDoctor}</span>
+        <span className="rounded-full border border-white/35 bg-white/15 px-3 py-1 text-xs font-bold">Nurse: {patient.assignedWardNurse}</span>
+        <button
+          className="ml-auto inline-flex h-9 items-center justify-center rounded-xl border border-white/30 bg-white px-4 text-xs font-semibold text-[#7367f0] shadow-sm transition hover:bg-white/90"
+          onClick={() => window.history.back()}
+          type="button"
+        >
+          Back
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function instructionDepartment(instruction: string) {
   const normalized = instruction.toLowerCase();
   return departmentByInstruction.find((item) => normalized.includes(item.match)) ?? { tab: "ordersets", label: "Nursing Care" };
@@ -165,6 +188,7 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
   const selectedPatient = assignedPatients.find((patient) => patient.id === selectedPatientId) ?? null;
   const orders = selectedPatient ? patientOrders(selectedPatient) : [];
   const selectedOrder = orders.find((order) => order.id === selectedOrderId) ?? null;
+  const selectedOrderTab = selectedOrder ? tabs.find((tab) => tab.id === selectedOrder.department) ?? null : null;
   const isDetailMode = mode === "detail" && selectedPatient;
 
   const openOrder = (order: WardNurseOrder) => {
@@ -189,6 +213,8 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
 
   return (
     <div className="space-y-4 px-2 py-2 sm:space-y-5 sm:px-0 sm:py-3">
+      {selectedPatient ? <OrderPatientStrip patient={selectedPatient} /> : null}
+
       <section className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
         <div className="flex flex-col gap-3 border-b border-border px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -326,23 +352,25 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
               </Dialog.Close>
             </div>
             <div className="min-h-0 flex-1 overflow-auto p-4">
-              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as OrderTab["id"])} className="w-full">
-                <div className="space-y-3 sm:space-y-4">
-                  <TabsList className="w-full gap-1.5 overflow-x-auto px-1 py-1 sm:gap-2 sm:px-0">
-                    {tabs.map((tab) => (
-                      <TabsTrigger key={tab.id} value={tab.id} className="flex h-8 min-w-[110px] flex-row items-center justify-center gap-1.5 border border-transparent px-2.5 text-xs sm:h-10 sm:min-w-[132px] sm:gap-2 sm:px-3 sm:text-sm data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                        <tab.icon className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
-                        <span className="min-w-0 truncate leading-none">{tab.label}</span>
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                  {tabs.map((tab) => (
-                    <TabsContent key={tab.id} value={tab.id} className="mt-2 sm:mt-3">
-                      {tab.component}
-                    </TabsContent>
-                  ))}
+              {selectedOrderTab ? (
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 text-primary">
+                        <selectedOrderTab.icon className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-foreground">{selectedOrderTab.label}</p>
+                        <p className="truncate text-xs font-medium text-muted-foreground">{selectedOrder?.instruction}</p>
+                      </div>
+                    </div>
+                    <span className="w-fit rounded-full border border-border bg-background px-3 py-1 text-xs font-bold text-foreground">
+                      {selectedOrder?.status}
+                    </span>
+                  </div>
+                  {selectedOrderTab.component}
                 </div>
-              </Tabs>
+              ) : null}
             </div>
           </Dialog.Content>
         </Dialog.Portal>

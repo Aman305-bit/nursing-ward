@@ -1,13 +1,15 @@
-export default function IcuCommandCenterNursingEarlyWarningScoreRoute() {
-  return (
-    <div className="min-h-[calc(100vh-88px)] bg-slate-50 p-4">
-      <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
-        <iframe
-          className="h-[calc(100vh-130px)] min-h-[760px] w-full"
-          src="/icu-early-warning-score/index.html"
-          title="Early Warning Score"
-        />
-      </div>
-    </div>
-  );
+import EarlyWarningScoreClient from "./early-warning-score-client";
+
+type PageSearchParams = Promise<Record<string, string | string[] | undefined>> | Record<string, string | string[] | undefined>;
+
+export default async function IcuCommandCenterNursingEarlyWarningScoreRoute({
+  searchParams,
+}: {
+  searchParams?: PageSearchParams;
+}) {
+  const resolvedSearchParams = searchParams ? await Promise.resolve(searchParams) : {};
+  const patientId = resolvedSearchParams.patientId;
+  const initialPatientId = Array.isArray(patientId) ? patientId[0] ?? "" : patientId ?? "";
+
+  return <EarlyWarningScoreClient initialPatientId={initialPatientId} />;
 }

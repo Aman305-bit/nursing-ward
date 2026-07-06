@@ -140,6 +140,73 @@ type DoctorMedicationOrder = {
   status: MedicationOrderStatus;
 };
 
+const WARD_NURSE_WORKSPACE_NAME = "Ward Nurse Kavita";
+
+function getWardNurseAssignedPatients() {
+  const assigned = icuPatients.filter((patient) => patient.assignedWardNurse === WARD_NURSE_WORKSPACE_NAME);
+  return assigned.length ? assigned : icuPatients;
+}
+
+function getWardNursePatient(patientId?: string | null) {
+  if (!patientId) return null;
+  return getWardNurseAssignedPatients().find((patient) => patient.id === patientId) ?? null;
+}
+
+function WardNursePatientSelect({
+  disabled,
+  label = "Patient",
+  onChange,
+  value,
+}: {
+  disabled?: boolean;
+  label?: string;
+  onChange: (patientId: string) => void;
+  value: string;
+}) {
+  const patients = getWardNurseAssignedPatients();
+  return (
+    <label className="space-y-1 text-sm">
+      <span className="font-medium text-foreground">{label}</span>
+      <select
+        className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground"
+        disabled={disabled}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        <option value="">Select patient</option>
+        {patients.map((patient) => (
+          <option key={patient.id} value={patient.id}>
+            {patient.bedNo} - {patient.patientName}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function WardNursePatientStrip({ patient }: { patient: IcuPatient }) {
+  return (
+    <section className="max-w-full overflow-x-auto rounded-lg border border-[#dcd8ff] bg-gradient-to-r from-[#7064EC] via-[#6878E8] to-[#6888E8] px-4 py-3 text-white shadow-sm">
+      <div className="flex min-w-max items-center gap-8 text-sm font-bold">
+        <span className="text-base">{patient.patientName}</span>
+        <span>MR: {patient.mrn}</span>
+        <span>Age/Sex: {patient.ageGender}</span>
+        <span>Bed: {patient.bedNo}</span>
+        <span>Unit: {patient.unit}</span>
+        <span>Doctor: {patient.admittingDoctor}</span>
+        <span>Nurse: {patient.assignedWardNurse}</span>
+        <button
+          className="ml-auto inline-flex h-9 items-center justify-center rounded-xl border border-white/30 bg-white px-4 text-xs font-semibold text-[#7367f0] shadow-sm transition hover:bg-white/90"
+          onClick={() => window.history.back()}
+          type="button"
+        >
+          Back
+        </button>
+      </div>
+    </section>
+  );
+}
+
 type MedicationOrderDraft = {
   patientId: string;
   department: MedicationDepartment;
@@ -2050,7 +2117,9 @@ type ClinicalHandoffRecord = NursingClinicalHandoffDraft & {
 };
 
 export function ShiftHandoverWorkspace() {
-  const firstPatient = icuPatients[0];
+  const searchParams = useSearchParams();
+  const queryPatientId = searchParams.get("patientId") ?? "";
+  const focusedPatient = getWardNursePatient(queryPatientId);
   const nurseOptions = React.useMemo(
     () => Array.from(new Set([
       "Ward Nurse Kavita",
@@ -2064,8 +2133,8 @@ export function ShiftHandoverWorkspace() {
     ])),
     [],
   );
-  const [draft, setDraft] = React.useState<NursingClinicalHandoffDraft>(() => buildClinicalHandoffDraft(firstPatient, "K - Morning (07:00-15:00)"));
-  const selectedPatient = icuPatients.find((patient) => patient.id === draft.patientId) ?? firstPatient;
+  const [draft, setDraft] = React.useState<NursingClinicalHandoffDraft>(() => buildClinicalHandoffDraft(focusedPatient ?? undefined, "K - Morning (07:00-15:00)"));
+  const selectedPatient = getWardNursePatient(draft.patientId);
   const [records, setRecords] = React.useState<ClinicalHandoffRecord[]>(() => [
     {
       ...buildClinicalHandoffDraft(icuPatients[0], "Y - Evening (15:00-23:00)"),
@@ -2086,13 +2155,19 @@ export function ShiftHandoverWorkspace() {
   };
 
   const updatePatient = (patientId: string) => {
-    const patient = icuPatients.find((item) => item.id === patientId) ?? firstPatient;
+    const patient = getWardNursePatient(patientId) ?? undefined;
     setDraft((current) => ({
       ...buildClinicalHandoffDraft(patient, current.shift),
       handoffDate: current.handoffDate,
       shift: current.shift,
     }));
   };
+
+  React.useEffect(() => {
+    if (focusedPatient) {
+      updatePatient(focusedPatient.id);
+    }
+  }, [focusedPatient?.id]);
 
   const updateShift = (shift: string) => {
     const pair = clinicalHandoffPairs[shift] ?? clinicalHandoffPairs["K - Morning (07:00-15:00)"];
@@ -2109,11 +2184,19 @@ export function ShiftHandoverWorkspace() {
   };
 
   const saveDraft = () => {
+    if (!selectedPatient) {
+      toast.error("Select patient before saving handover.");
+      return;
+    }
     setRecords((current) => [{ ...draft, id: `nch-${current.length + 1}`, status: "Draft" }, ...current]);
     toast.success("Nursing clinical handoff draft saved");
   };
 
   const signHandoff = () => {
+    if (!selectedPatient) {
+      toast.error("Select patient before signing handover.");
+      return;
+    }
     if (draft.handedOverBy === draft.takenOverBy) {
       toast.error("Handed over aur taken over nurse same nahi ho sakte");
       return;
@@ -2123,35 +2206,26 @@ export function ShiftHandoverWorkspace() {
   };
 
   const resetDraft = () => {
-    setDraft(buildClinicalHandoffDraft(selectedPatient, draft.shift));
+    setDraft(buildClinicalHandoffDraft(selectedPatient ?? undefined, draft.shift));
   };
+
+  const visibleRecords = selectedPatient ? records.filter((record) => record.patientId === selectedPatient.id) : [];
 
   return (
     <div className="space-y-4">
+      {selectedPatient ? <WardNursePatientStrip patient={selectedPatient} /> : null}
       <Card className="overflow-hidden">
-        <CardContent className="grid gap-3 p-3 lg:grid-cols-[minmax(260px,1fr)_minmax(220px,0.85fr)_160px_minmax(320px,1.25fr)] lg:items-end">
-          <SelectField
-            label="Patient / bed"
-            value={draft.patientId}
-            onChange={updatePatient}
-            options={icuPatients.map((patient) => patient.id)}
-            renderOption={(id) => {
-              const patient = icuPatients.find((item) => item.id === id);
-              return patient ? `${patient.bedNo} - ${patient.patientName}` : id;
-            }}
-          />
+        <CardContent className="grid gap-3 p-3 lg:grid-cols-[minmax(260px,1fr)_minmax(220px,0.85fr)_160px] lg:items-end">
+          <WardNursePatientSelect disabled={Boolean(focusedPatient)} label="Patient / bed" value={draft.patientId} onChange={updatePatient} />
           <SelectField label="Shift" value={draft.shift} onChange={updateShift} options={clinicalHandoffShiftOptions} />
           <label className="space-y-1 text-sm">
             <span className="font-medium text-foreground">Date</span>
             <Input type="date" value={draft.handoffDate} onChange={(event) => updateDraft("handoffDate", event.target.value)} />
           </label>
-          <div className="rounded-md border border-border bg-surface-muted px-3 py-2 text-xs leading-5 text-muted-foreground">
-            <p className="font-semibold text-foreground">{selectedPatient?.bedNo} - {selectedPatient?.patientName}</p>
-            <p>{selectedPatient?.mrn} | {selectedPatient?.ageGender} | {selectedPatient?.unit}</p>
-          </div>
         </CardContent>
       </Card>
 
+      {selectedPatient ? (
       <Card>
           <CardHeader>
             <div>
@@ -2262,13 +2336,16 @@ export function ShiftHandoverWorkspace() {
             </div>
           </CardContent>
       </Card>
+      ) : (
+        <EmptyPanel title="Select patient" detail="Choose an assigned patient to prepare shift handover." />
+      )}
 
       <Card>
         <CardHeader>
           <div>
             <CardTitle>Clinical Handoff Queue</CardTitle>
           </div>
-          <Badge tone="info">{records.length} records</Badge>
+          <Badge tone="info">{visibleRecords.length} records</Badge>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="min-w-[920px] w-full border-separate border-spacing-0 text-sm">
@@ -2283,8 +2360,8 @@ export function ShiftHandoverWorkspace() {
               </tr>
             </thead>
             <tbody>
-              {records.map((record) => {
-                const patient = icuPatients.find((item) => item.id === record.patientId);
+              {visibleRecords.map((record) => {
+                const patient = getWardNursePatient(record.patientId);
                 return (
                   <tr className="border-b border-border" key={record.id}>
                     <td className="px-3 py-3 align-top">
@@ -2320,6 +2397,13 @@ export function ShiftHandoverWorkspace() {
                   </tr>
                 );
               })}
+              {!visibleRecords.length ? (
+                <tr>
+                  <td className="px-3 py-8 text-center text-sm text-muted-foreground" colSpan={6}>
+                    {selectedPatient ? "No handover record captured for this patient." : "Select patient to view handover records."}
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </CardContent>
@@ -2330,7 +2414,7 @@ export function ShiftHandoverWorkspace() {
 
 function buildClinicalHandoffDraft(patient?: IcuPatient, shift = "K - Morning (07:00-15:00)"): NursingClinicalHandoffDraft {
   const pair = clinicalHandoffPairs[shift] ?? clinicalHandoffPairs["K - Morning (07:00-15:00)"];
-  const patientId = patient?.id ?? icuPatients[0]?.id ?? "";
+  const patientId = patient?.id ?? "";
   const alerts = icuAlerts.filter((row) => row.patientId === patientId && row.status !== "Resolved");
   const meds = medicationRows.filter((row) => row.patientId === patientId);
   const highAlertMeds = meds.filter((row) => row.doubleVerification !== "Not required" || row.route.toLowerCase().includes("infusion"));
@@ -2346,26 +2430,26 @@ function buildClinicalHandoffDraft(patient?: IcuPatient, shift = "K - Morning (0
       patient ? `${patient.currentStatus}: ${patient.diagnosis}` : "",
       alerts.length ? alerts.map((alert) => `${alert.type} - ${alert.message}`).join("; ") : "",
       ioBalance > 500 ? `Positive fluid balance ${formatHandoverMl(ioBalance)}` : "",
-    ].filter(Boolean).join(" | ") || "No critical information captured.",
-    allergies: clinicalHandoffAllergyText(patient),
-    pendingInvestigations: pendingHandoffInvestigations(patient, tasks, alerts),
+    ].filter(Boolean).join(" | ") || (patient ? "No critical information captured." : ""),
+    allergies: patient ? clinicalHandoffAllergyText(patient) : "",
+    pendingInvestigations: patient ? pendingHandoffInvestigations(patient, tasks, alerts) : "",
     pendingReports: alerts.some((alert) => alert.type.toLowerCase().includes("lab") || alert.source.toLowerCase().includes("lab"))
       ? "Lab report pending collection and doctor review."
-      : "No pending report collection captured.",
+      : patient ? "No pending report collection captured." : "",
     highAlertMedications: highAlertMeds.length
       ? highAlertMeds.map((med) => `${med.medication} ${med.dose} ${med.route} (${med.doubleVerification})`).join("; ")
-      : "No high-alert medication running.",
+      : patient ? "No high-alert medication running." : "",
     pendingMedications: pendingMeds.length
       ? pendingMeds.map((med) => `${med.medication} ${med.dose} ${med.status} at ${med.scheduledTime}`).join("; ")
-      : "No pending medication captured.",
+      : patient ? "No pending medication captured." : "",
     otherMedicationInfo: meds.length
       ? meds.map((med) => `${med.medication}: ${med.reason}`).slice(0, 3).join("; ")
-      : "Medication chart reviewed; no active medication row captured.",
-    proceduresDone: patient?.ventilatorStatus?.toLowerCase().includes("vent")
+      : patient ? "Medication chart reviewed; no active medication row captured." : "",
+    proceduresDone: !patient ? "" : patient.ventilatorStatus?.toLowerCase().includes("vent")
       ? "Airway/ventilator checks completed and documented."
       : "Routine line, drain, and bedside safety checks completed.",
-    proceduresPlanned: tasks.length ? tasks.slice(0, 3).map((task) => task.title).join("; ") : "No planned procedure captured.",
-    consultantReferral: clinicalHandoffReferralText(patient, alerts),
+    proceduresPlanned: tasks.length ? tasks.slice(0, 3).map((task) => task.title).join("; ") : patient ? "No planned procedure captured." : "",
+    consultantReferral: patient ? clinicalHandoffReferralText(patient, alerts) : "",
     handedOverBy: pair.outgoingNurse,
     takenOverBy: pair.incomingNurse,
     signatureConfirmation: "Pending bedside confirmation",
@@ -2455,6 +2539,159 @@ function clinicalHandoffReferralText(patient: IcuPatient | undefined, alerts: Ic
   if (patient.unit === "Transplant ICU") return "Transplant team review pending for immunosuppression and renal output.";
   if (patient.unit === "Respiratory ICU") return "Respiratory therapist/consultant review for NIV response.";
   return "No new consultant referral captured.";
+}
+
+export function ShiftPendingSummaryWorkspace() {
+  const searchParams = useSearchParams();
+  const queryPatientId = searchParams.get("patientId") ?? "";
+  const focusedPatient = getWardNursePatient(queryPatientId);
+  const [patientId, setPatientId] = React.useState(focusedPatient?.id ?? "");
+  const [shift, setShift] = React.useState("Current shift");
+  const [nurse, setNurse] = React.useState(WARD_NURSE_WORKSPACE_NAME);
+
+  React.useEffect(() => {
+    if (focusedPatient) {
+      setPatientId(focusedPatient.id);
+      setNurse(focusedPatient.assignedWardNurse);
+    }
+  }, [focusedPatient?.id]);
+
+  const selectedPatient = getWardNursePatient(patientId);
+  const summary = selectedPatient ? buildWholeShiftSummary(selectedPatient, nurse, shift) : null;
+  const nurseOptions = React.useMemo(
+    () => Array.from(new Set(getWardNurseAssignedPatients().map((patient) => patient.assignedWardNurse))),
+    [],
+  );
+
+  return (
+    <div className="space-y-4">
+      {selectedPatient ? <WardNursePatientStrip patient={selectedPatient} /> : null}
+
+      <Card className="overflow-hidden">
+        <CardContent className="grid gap-3 p-3 md:grid-cols-3 md:items-end">
+          <WardNursePatientSelect disabled={Boolean(focusedPatient)} label="Patient / bed" value={patientId} onChange={setPatientId} />
+          <NativeSelect label="Ward nurse" value={nurse} onChange={setNurse} options={nurseOptions.length ? nurseOptions : [WARD_NURSE_WORKSPACE_NAME]} />
+          <NativeSelect label="Shift" value={shift} onChange={setShift} options={["Current shift", "Morning shift", "Evening shift", "Night shift"]} />
+        </CardContent>
+      </Card>
+
+      {!summary ? (
+        <EmptyPanel title="Select patient" detail="Choose an assigned patient to view pending shift work." />
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-2">
+          <ShiftSummaryPanel title="Pending work" items={summary.pending} />
+          <ShiftSummaryPanel title="Critical watch" items={summary.critical} />
+          <ShiftSummaryPanel title="Completed in shift" items={summary.completed} />
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b border-border bg-white">
+              <CardTitle>Next-shift notes</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 p-3 text-sm">
+              <SummaryLine label="Active issues" value={summary.suggested.issues} />
+              <SummaryLine label="Pending tests" value={summary.suggested.pendingTests} />
+              <SummaryLine label="Pending medicine" value={summary.suggested.pendingMeds} />
+              <SummaryLine label="Escalation risks" value={summary.suggested.risks} />
+              <SummaryLine label="To-do list" value={summary.suggested.todos} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ShiftSummaryPanel({ items, title }: { items: string[]; title: string }) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="border-b border-border bg-white">
+        <CardTitle>{title}</CardTitle>
+        <Badge tone="info">{items.length}</Badge>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="divide-y divide-border">
+          {items.map((item, index) => (
+            <div className="px-4 py-3 text-sm font-medium text-foreground" key={`${title}-${index}`}>
+              {item}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SummaryLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid gap-2 rounded-md border border-border bg-surface-muted px-3 py-2 sm:grid-cols-[150px_minmax(0,1fr)]">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold text-foreground">{value}</span>
+    </div>
+  );
+}
+
+export function RaiseIssueToUnitNurseWorkspace() {
+  const searchParams = useSearchParams();
+  const queryPatientId = searchParams.get("patientId") ?? "";
+  const focusedPatient = getWardNursePatient(queryPatientId);
+  const [patientId, setPatientId] = React.useState(focusedPatient?.id ?? "");
+  const [summary, setSummary] = React.useState("");
+  const [details, setDetails] = React.useState("");
+  const selectedPatient = getWardNursePatient(patientId);
+
+  React.useEffect(() => {
+    if (focusedPatient) {
+      setPatientId(focusedPatient.id);
+    }
+  }, [focusedPatient?.id]);
+
+  React.useEffect(() => {
+    if (!selectedPatient) {
+      setSummary("");
+      setDetails("");
+      return;
+    }
+    const firstAlert = icuAlerts.find((alert) => alert.patientId === selectedPatient.id && alert.status !== "Resolved");
+    const firstTask = icuTasks.find((task) => task.patientId === selectedPatient.id && task.status !== "Completed");
+    setSummary(firstAlert?.type ?? firstTask?.title ?? "Need unit nurse review");
+    setDetails(firstAlert?.message ?? firstTask?.remarks ?? "");
+  }, [selectedPatient?.id]);
+
+  const submitIssue = () => {
+    if (!selectedPatient) {
+      toast.error("Select patient before raising issue.");
+      return;
+    }
+    toast.success(`Issue sent to ${selectedPatient.assignedUnitNurse}`);
+  };
+
+  return (
+    <div className="space-y-4">
+      {selectedPatient ? <WardNursePatientStrip patient={selectedPatient} /> : null}
+
+      <Card className="overflow-hidden">
+        <CardContent className="grid gap-3 p-3 md:max-w-xl">
+          <WardNursePatientSelect disabled={Boolean(focusedPatient)} label="Patient / bed" value={patientId} onChange={setPatientId} />
+        </CardContent>
+      </Card>
+
+      {!selectedPatient ? (
+        <EmptyPanel title="Select patient" detail="Choose an assigned patient before raising an issue." />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Notify Unit Nurse</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <TextAreaField label="Issue summary" value={summary} onChange={setSummary} placeholder="Short issue title" />
+            <TextAreaField label="Clinical details" value={details} onChange={setDetails} placeholder="What changed, current vitals, medicine/order pending, immediate support needed..." />
+            <div className="flex justify-end">
+              <Button onClick={submitIssue}>Send to Unit Nurse</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
 }
 
 export function buildWholeShiftSummary(patient: IcuPatient, nurse: string, shift: string) {
@@ -4152,10 +4389,10 @@ export function MedicationTimelineWorkspace() {
   const queryUnit = searchParams.get("unit")?.trim() ?? "";
   const queryFocus = searchParams.get("focus")?.trim() ?? "";
   const requestedPatientId = searchParams.get("patientId") ?? "";
-  const focusedPatient = requestedPatientId ? icuPatients.find((patient) => patient.id === requestedPatientId) : undefined;
+  const focusedPatient = getWardNursePatient(requestedPatientId);
   const [orders, setOrders] = React.useState<DoctorMedicationOrder[]>(seededDoctorMedicationOrders);
   const [doses, setDoses] = React.useState<MedicationDoseRow[]>(() => buildMedicationDoseRows(seededDoctorMedicationOrders));
-  const [patientId, setPatientId] = React.useState(focusedPatient?.id ?? "All patients");
+  const [patientId, setPatientId] = React.useState(focusedPatient?.id ?? "");
   const [unitFilter, setUnitFilter] = React.useState(queryUnit || "All ICU units");
   const [medicationDate, setMedicationDate] = React.useState("2026-06-08");
   const [shift, setShift] = React.useState<(typeof medicationShiftOptions)[number]>("All shifts");
@@ -4174,7 +4411,7 @@ export function MedicationTimelineWorkspace() {
   React.useEffect(() => {
     if (queryUnit) {
       setUnitFilter(queryUnit);
-      setPatientId(focusedPatient?.id ?? "All patients");
+      setPatientId(focusedPatient?.id ?? "");
       setSelectedDoseId(null);
       setQuery("");
     }
@@ -4200,7 +4437,8 @@ export function MedicationTimelineWorkspace() {
     return searchable.includes(query.toLowerCase())
       && (!focusedPatient || row.patientId === focusedPatient.id)
       && (unitFilter === "All ICU units" || patient?.unit === unitFilter)
-      && (patientId === "All patients" || row.patientId === patientId)
+      && Boolean(patientId)
+      && row.patientId === patientId
       && (!medicationDate || row.scheduledDate === medicationDate)
       && (shift === "All shifts" || row.shift === shift);
   }).sort((left, right) => {
@@ -4218,9 +4456,9 @@ export function MedicationTimelineWorkspace() {
   const selectedFormularyMedicine = getSelectedFormularyMedicine(draft);
   const doctorOrderScenarios = getDoctorOrderScenarios(draft, orders);
   const hasBlockingDoctorScenario = doctorOrderScenarios.some((scenario) => scenario.blocking);
-  const selectedFilterPatient = patientId === "All patients" ? undefined : icuPatients.find((patient) => patient.id === patientId);
+  const selectedFilterPatient = getWardNursePatient(patientId);
   const medicationFilterSummary = [
-    selectedFilterPatient ? `${selectedFilterPatient.bedNo} - ${selectedFilterPatient.patientName}` : "All patients",
+    selectedFilterPatient ? `${selectedFilterPatient.bedNo} - ${selectedFilterPatient.patientName}` : "Select patient",
     medicationDate || "All dates",
     shift,
     unitFilter,
@@ -4508,6 +4746,7 @@ export function MedicationTimelineWorkspace() {
 
   return (
     <div className="space-y-4">
+      {selectedFilterPatient ? <WardNursePatientStrip patient={selectedFilterPatient} /> : null}
       <details className="group overflow-hidden rounded-md border border-border bg-white shadow-sm">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-surface-muted [&::-webkit-details-marker]:hidden">
           <span className="min-w-0">
@@ -4526,8 +4765,8 @@ export function MedicationTimelineWorkspace() {
                 if (!focusedPatient) setPatientId(event.target.value);
               }}
             >
-              {focusedPatient ? null : <option value="All patients">All patients</option>}
-              {(focusedPatient ? [focusedPatient] : icuPatients).map((patient) => (
+              {focusedPatient ? null : <option value="">Select patient</option>}
+              {(focusedPatient ? [focusedPatient] : getWardNurseAssignedPatients()).map((patient) => (
                 <option key={patient.id} value={patient.id}>{patient.bedNo} - {patient.patientName}</option>
               ))}
             </select>
@@ -4549,7 +4788,7 @@ export function MedicationTimelineWorkspace() {
           <Button className="w-full" variant="outline" onClick={() => {
             setQuery("");
             setUnitFilter(queryUnit || "All ICU units");
-            setPatientId(focusedPatient?.id ?? "All patients");
+            setPatientId(focusedPatient?.id ?? "");
             setMedicationDate("2026-06-08");
             setShift("All shifts");
             setEmarQueue("Due Now");
@@ -4596,13 +4835,17 @@ export function MedicationTimelineWorkspace() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <MedicationChartTable
-              doses={emarDoses}
-              selectedDoseId={selectedDose?.id}
-              onMarkPharmacyAvailable={markPharmacyAvailable}
-              onRequestAction={requestDoseAction}
-              onSelectDose={setSelectedDoseId}
-            />
+            {selectedFilterPatient ? (
+              <MedicationChartTable
+                doses={emarDoses}
+                selectedDoseId={selectedDose?.id}
+                onMarkPharmacyAvailable={markPharmacyAvailable}
+                onRequestAction={requestDoseAction}
+                onSelectDose={setSelectedDoseId}
+              />
+            ) : (
+              <EmptyPanel title="Select patient" detail="Choose an assigned patient to view medication administration." />
+            )}
           </CardContent>
         </Card>
       </div>
@@ -4668,26 +4911,29 @@ export function MedicineReceiveVerifyWorkspace() {
   const searchParams = useSearchParams();
   const queryPatientId = searchParams.get("patientId") ?? "";
   const [doses, setDoses] = React.useState<MedicationDoseRow[]>(() => applyReadyMedicationState(buildMedicationDoseRows(seededDoctorMedicationOrders)));
-  const [patientId, setPatientId] = React.useState(queryPatientId && icuPatients.some((patient) => patient.id === queryPatientId) ? queryPatientId : "All patients");
+  const focusedPatient = getWardNursePatient(queryPatientId);
+  const [patientId, setPatientId] = React.useState(focusedPatient?.id ?? "");
   const [query, setQuery] = React.useState("");
   const [queue, setQueue] = React.useState<"Pending" | "Ready" | "All">("Pending");
+  const selectedPatient = getWardNursePatient(patientId);
 
   React.useEffect(() => {
     setDoses((current) => applyReadyMedicationState(current));
   }, []);
 
   React.useEffect(() => {
-    if (queryPatientId && icuPatients.some((patient) => patient.id === queryPatientId)) {
-      setPatientId(queryPatientId);
+    if (focusedPatient) {
+      setPatientId(focusedPatient.id);
     }
-  }, [queryPatientId]);
+  }, [focusedPatient?.id]);
 
   const queueRows = doses.filter((dose) => {
     const patient = icuPatients.find((item) => item.id === dose.patientId);
     const ready = dose.pharmacyStatus === "Available" && (!dose.highRisk || dose.doubleVerification === "Verified");
     const searchable = `${patient?.patientName ?? ""} ${dose.bedNo} ${dose.medication} ${dose.dose} ${dose.route} ${dose.doctor}`.toLowerCase();
     return searchable.includes(query.toLowerCase())
-      && (patientId === "All patients" || dose.patientId === patientId)
+      && Boolean(patientId)
+      && dose.patientId === patientId
       && dose.orderStatus === "Active"
       && (queue === "All" || (queue === "Pending" ? !ready : ready));
   }).sort((left, right) => {
@@ -4696,8 +4942,9 @@ export function MedicineReceiveVerifyWorkspace() {
     return Number(leftReady) - Number(rightReady) || medicationChartSortValue(left).localeCompare(medicationChartSortValue(right));
   });
 
-  const pendingCount = doses.filter((dose) => dose.orderStatus === "Active" && (dose.pharmacyStatus !== "Available" || (dose.highRisk && dose.doubleVerification === "Pending"))).length;
-  const readyCount = doses.filter((dose) => dose.orderStatus === "Active" && dose.pharmacyStatus === "Available" && (!dose.highRisk || dose.doubleVerification === "Verified")).length;
+  const selectedPatientDoses = patientId ? doses.filter((dose) => dose.patientId === patientId && dose.orderStatus === "Active") : [];
+  const pendingCount = selectedPatientDoses.filter((dose) => dose.pharmacyStatus !== "Available" || (dose.highRisk && dose.doubleVerification === "Pending")).length;
+  const readyCount = selectedPatientDoses.filter((dose) => dose.pharmacyStatus === "Available" && (!dose.highRisk || dose.doubleVerification === "Verified")).length;
 
   const receiveAndVerify = (doseId: string) => {
     const target = doses.find((dose) => dose.id === doseId);
@@ -4714,6 +4961,7 @@ export function MedicineReceiveVerifyWorkspace() {
 
   return (
     <div className="space-y-4">
+      {selectedPatient ? <WardNursePatientStrip patient={selectedPatient} /> : null}
       <Card className="overflow-hidden border-slate-200 bg-white shadow-sm">
         <CardHeader className="border-b border-slate-200 bg-white">
           <div>
@@ -4737,11 +4985,12 @@ export function MedicineReceiveVerifyWorkspace() {
               <span className="font-medium text-foreground">Patient</span>
               <select
                 className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20"
+                disabled={Boolean(focusedPatient)}
                 value={patientId}
                 onChange={(event) => setPatientId(event.target.value)}
               >
-                <option value="All patients">All patients</option>
-                {icuPatients.map((patient) => (
+                <option value="">Select patient</option>
+                {(focusedPatient ? [focusedPatient] : getWardNurseAssignedPatients()).map((patient) => (
                   <option key={patient.id} value={patient.id}>{patient.bedNo} - {patient.patientName}</option>
                 ))}
               </select>
@@ -4749,7 +4998,7 @@ export function MedicineReceiveVerifyWorkspace() {
             <NativeSelect label="Queue" value={queue} onChange={(value) => setQueue(value as typeof queue)} options={["Pending", "Ready", "All"]} />
             <Button variant="outline" onClick={() => {
               setQuery("");
-              setPatientId(queryPatientId || "All patients");
+              setPatientId(focusedPatient?.id ?? "");
               setQueue("Pending");
             }}>Reset</Button>
           </div>
@@ -4814,7 +5063,9 @@ export function MedicineReceiveVerifyWorkspace() {
                 })}
                 {!queueRows.length ? (
                   <tr>
-                    <td className="px-4 py-8 text-center text-sm text-muted-foreground" colSpan={7}>No medicine in this queue.</td>
+                    <td className="px-4 py-8 text-center text-sm text-muted-foreground" colSpan={7}>
+                      {selectedPatient ? "No medicine in this queue." : "Select patient to view receive and verification queue."}
+                    </td>
                   </tr>
                 ) : null}
               </tbody>
@@ -4931,6 +5182,13 @@ export function DoctorOrderEntryWorkspace() {
             <span>Unit: {selectedPatient.unit}</span>
             <span>Doctor: {selectedPatient.admittingDoctor}</span>
             <span>Nurse: {selectedPatient.assignedWardNurse}</span>
+            <button
+              className="ml-auto inline-flex h-9 items-center justify-center rounded-xl border border-white/30 bg-white px-4 text-xs font-semibold text-[#7367f0] shadow-sm transition hover:bg-white/90"
+              onClick={() => window.history.back()}
+              type="button"
+            >
+              Back
+            </button>
           </div>
         </section>
       ) : null}
@@ -5420,6 +5678,15 @@ function MedicationPatientStrip({
         <span>{patient ? `Unit: ${patient.unit}` : `${highRiskCount} high-alert`}</span>
         <span>{patient ? `Doctor: ${patient.dutyDoctor}` : `${pharmacyIssueCount} pharmacy issue(s)`}</span>
         <span>{patient ? `Nurse: ${patient.assignedWardNurse}` : "Nurse eMAR"}</span>
+        {patient ? (
+          <button
+            className="ml-auto inline-flex h-9 items-center justify-center rounded-xl border border-white/30 bg-white px-4 text-xs font-semibold text-[#7367f0] shadow-sm transition hover:bg-white/90"
+            onClick={() => window.history.back()}
+            type="button"
+          >
+            Back
+          </button>
+        ) : null}
       </div>
     </div>
   );

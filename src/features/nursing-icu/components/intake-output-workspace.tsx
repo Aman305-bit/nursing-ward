@@ -24,6 +24,7 @@ import type { StatusTone } from "@/types";
 import {
   icuPatients,
   intakeOutputRows,
+  type IcuPatient,
   type IcuIntakeOutput,
 } from "../nursing-icu-data";
 
@@ -174,7 +175,8 @@ function IntakeOutputWorkspaceInner({
   const searchParams = useSearchParams();
   const queryPatientId = searchParams.get("patientId") ?? undefined;
   const isFluidBalanceView = !entryOnly && (forceFluidBalanceView ?? searchParams.get("view") === "fluid-balance");
-  const [patientId, setPatientId] = React.useState(lockedPatientId ?? initialPatientId ?? queryPatientId ?? icuPatients[0]?.id ?? "");
+  const resolvedInitialPatientId = lockedPatientId ?? initialPatientId ?? queryPatientId ?? "";
+  const [patientId, setPatientId] = React.useState(resolvedInitialPatientId);
   const [view, setView] = React.useState<IoView>(initialView);
   const [mode, setMode] = React.useState<IoMode>(initialMode);
   const [selectedDate, setSelectedDate] = React.useState(selectedToday);
@@ -186,6 +188,7 @@ function IntakeOutputWorkspaceInner({
   const [hourFilter, setHourFilter] = React.useState<(typeof hourOptions)[number]>("All hours");
   const [sourceFilter, setSourceFilter] = React.useState<SourceFilter>("All sources");
   const [query, setQuery] = React.useState("");
+  const [filtersOpen, setFiltersOpen] = React.useState(false);
   const [quickAddOpen, setQuickAddOpen] = React.useState(false);
   const [manualRows, setManualRows] = React.useState<IcuIntakeOutput[]>([]);
   const [activeCell, setActiveCell] = React.useState<ActiveCell>(null);
@@ -201,10 +204,15 @@ function IntakeOutputWorkspaceInner({
     comment: "",
   });
 
-  const selectedPatient = icuPatients.find((patient) => patient.id === (lockedPatientId ?? patientId)) ?? icuPatients[0];
+  React.useEffect(() => {
+    setPatientId(resolvedInitialPatientId);
+  }, [resolvedInitialPatientId]);
+
+  const selectedPatient = icuPatients.find((patient) => patient.id === (lockedPatientId ?? patientId)) ?? null;
   const allRows = React.useMemo(() => [...manualRows, ...intakeOutputRows.map(normalizeIoCategory)], [manualRows]);
 
   const scopedRows = React.useMemo(() => {
+    if (!selectedPatient) return [];
     const text = query.trim().toLowerCase();
     return allRows.filter((row) => {
       const inPatient = row.patientId === selectedPatient.id;
@@ -215,11 +223,11 @@ function IntakeOutputWorkspaceInner({
       const inText = !text || [row.component, row.category, row.route, row.note, row.nurse, row.source].some((value) => value.toLowerCase().includes(text));
       return inPatient && inDate && inTime && inHour && inSource && inText;
     });
-  }, [allRows, customEndTime, customStartTime, fromDate, hourFilter, query, selectedDate, selectedPatient.id, sourceFilter, timeWindow, toDate, view]);
+  }, [allRows, customEndTime, customStartTime, fromDate, hourFilter, query, selectedDate, selectedPatient, sourceFilter, timeWindow, toDate, view]);
 
   const buckets = React.useMemo(() => buildBuckets(view, selectedDate, scopedRows), [scopedRows, selectedDate, view]);
   const totals = React.useMemo(() => summarizeRows(scopedRows), [scopedRows]);
-  const previousRows = React.useMemo(() => allRows.filter((row) => row.patientId === selectedPatient.id && row.date < selectedDate), [allRows, selectedDate, selectedPatient.id]);
+  const previousRows = React.useMemo(() => selectedPatient ? allRows.filter((row) => row.patientId === selectedPatient.id && row.date < selectedDate) : [], [allRows, selectedDate, selectedPatient]);
   const previousBalance = React.useMemo(() => summarizeRows(previousRows).balance, [previousRows]);
   const alerts = React.useMemo(() => buildFluidAlerts(scopedRows, totals.balance), [scopedRows, totals.balance]);
   const graphSeries = React.useMemo(() => buildGraphSeries(scopedRows, buckets), [buckets, scopedRows]);
@@ -242,6 +250,10 @@ function IntakeOutputWorkspaceInner({
   };
 
   const saveManualEntry = () => {
+    if (!selectedPatient) {
+      toast.error("Select patient before adding intake/output");
+      return;
+    }
     const quantity = Number(draft.quantity);
     if (!Number.isFinite(quantity) || quantity <= 0) {
       toast.error("Quantity must be greater than zero");
@@ -291,22 +303,33 @@ function IntakeOutputWorkspaceInner({
 
   return (
     <div className="space-y-4">
+      {selectedPatient ? <IntakeOutputPatientStrip patient={selectedPatient} /> : null}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <div className="min-w-0 flex-1">
           <IoCollapsiblePanel
-            summary={`${selectedPatient.bedNo} - ${selectedPatient.patientName} | ${view} | ${timeWindow} | ${scopedRows.length} row(s)`}
+            open={filtersOpen}
+            onOpenChange={setFiltersOpen}
+            summary={selectedPatient ? `${selectedPatient.bedNo} - ${selectedPatient.patientName} | ${view} | ${timeWindow} | ${scopedRows.length} row(s)` : `No patient selected | ${view} | ${timeWindow}`}
             title="Search & filters"
           >
             <div className="p-3">
               <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <FieldBlock label="Patient / bed">
-                  {lockedPatientId ? (
+                  {lockedPatientId && selectedPatient ? (
                     <div className="flex h-10 items-center justify-between gap-2 rounded-md border border-slate-300 bg-slate-100 px-3 text-sm text-slate-950">
                       <span className="truncate">{selectedPatient.bedNo} - {selectedPatient.patientName}</span>
                       <Badge tone="info">Locked</Badge>
                     </div>
                   ) : (
-                    <select className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:ring-2 focus:ring-sky-200" value={patientId} onChange={(event) => setPatientId(event.target.value)}>
+                    <select
+                      className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 outline-none focus:ring-2 focus:ring-sky-200"
+                      value={patientId}
+                      onChange={(event) => {
+                        setPatientId(event.target.value);
+                        setFiltersOpen(false);
+                      }}
+                    >
+                      <option value="">Select patient</option>
                       {icuPatients.map((patient) => (
                         <option key={patient.id} value={patient.id}>{patient.bedNo} - {patient.patientName}</option>
                       ))}
@@ -377,33 +400,38 @@ function IntakeOutputWorkspaceInner({
           </IoCollapsiblePanel>
         </div>
         {!isFluidBalanceView ? (
-          <Button className="h-10 shrink-0 justify-center whitespace-nowrap lg:mt-0.5" onClick={() => setQuickAddOpen(true)}>
+          <Button className="h-10 shrink-0 justify-center whitespace-nowrap lg:mt-0.5" disabled={!selectedPatient} onClick={() => setQuickAddOpen(true)}>
             <Plus className="h-4 w-4" />Add entry
           </Button>
         ) : null}
       </div>
 
-      <div className="space-y-4">
-        {entryOnly ? (
-          <>
+      {selectedPatient ? (
+        <div className="space-y-4">
+          {entryOnly ? (
+            <>
+              <FluidBalanceMatrix buckets={buckets} rows={scopedRows} activeCell={activeCell} onSelectCell={setActiveCell} />
+            </>
+          ) : isFluidBalanceView ? (
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_390px]">
+              <FluidBalanceGraph series={graphSeries} />
+              <FluidGraphReviewPanel alerts={alerts} previousBalance={previousBalance} rows={scopedRows} series={graphSeries} />
+            </div>
+          ) : effectiveMode === "Table" ? (
             <FluidBalanceMatrix buckets={buckets} rows={scopedRows} activeCell={activeCell} onSelectCell={setActiveCell} />
-            <FluidLedger rows={scopedRows} />
-          </>
-        ) : isFluidBalanceView ? (
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_390px]">
+          ) : (
             <FluidBalanceGraph series={graphSeries} />
-            <FluidGraphReviewPanel alerts={alerts} previousBalance={previousBalance} rows={scopedRows} series={graphSeries} />
-          </div>
-        ) : effectiveMode === "Table" ? (
-          <FluidBalanceMatrix buckets={buckets} rows={scopedRows} activeCell={activeCell} onSelectCell={setActiveCell} />
-        ) : (
-          <FluidBalanceGraph series={graphSeries} />
-        )}
+          )}
 
-        {!isFluidBalanceView ? (
-          <FluidLedger rows={scopedRows} />
-        ) : null}
-      </div>
+          {!isFluidBalanceView ? (
+            <FluidLedger rows={scopedRows} />
+          ) : null}
+        </div>
+      ) : (
+        <div className="rounded-md border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm font-semibold text-slate-500 shadow-sm">
+          Select patient to view and add intake/output.
+        </div>
+      )}
 
       <QuickFluidEntryDialog
         draft={draft}
@@ -412,9 +440,38 @@ function IntakeOutputWorkspaceInner({
         onKindChange={changeDraftKind}
         onOpenChange={setQuickAddOpen}
         onSave={saveManualEntry}
-        patientLabel={`${selectedPatient.bedNo} - ${selectedPatient.patientName}`}
+        patientLabel={selectedPatient ? `${selectedPatient.bedNo} - ${selectedPatient.patientName}` : "Select patient"}
       />
     </div>
+  );
+}
+
+function IntakeOutputPatientStrip({ patient }: { patient: IcuPatient }) {
+  return (
+    <section
+      className="max-w-full overflow-x-auto rounded-xl border border-[#7367f0]/40 px-4 py-3 text-white shadow-[0_8px_20px_rgba(115,103,240,0.24)]"
+      style={{ background: "linear-gradient(90deg,#7367f0,#5b8def)" }}
+    >
+      <div className="flex min-w-max items-center gap-3 text-sm font-semibold text-white/85">
+        <span className="pr-1 text-base font-bold text-white">{patient.patientName}</span>
+        <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-700 shadow-sm">
+          {patient.criticalityScore >= 8 ? "Urgent" : patient.currentStatus}
+        </span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">MR: {patient.mrn}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Age/Sex: {patient.ageGender}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Bed: {patient.bedNo}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Unit: {patient.unit}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Doctor: {patient.admittingDoctor}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs font-medium text-white shadow-sm">Nurse: {patient.assignedWardNurse}</span>
+        <button
+          className="ml-auto inline-flex h-9 items-center justify-center rounded-xl border border-white/30 bg-white px-4 text-xs font-semibold text-[#7367f0] shadow-sm transition hover:bg-white/90"
+          onClick={() => window.history.back()}
+          type="button"
+        >
+          Back
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -440,15 +497,35 @@ function FluidHeaderMetric({ label, value, tone }: { label: string; value: strin
   );
 }
 
-function IoCollapsiblePanel({ children, summary, title }: { children: React.ReactNode; summary: string; title: string }) {
-  const [open, setOpen] = React.useState(false);
+function IoCollapsiblePanel({
+  children,
+  onOpenChange,
+  open,
+  summary,
+  title,
+}: {
+  children: React.ReactNode;
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
+  summary: string;
+  title: string;
+}) {
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const isOpen = open ?? internalOpen;
+  const changeOpen = (nextOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(nextOpen);
+      return;
+    }
+    setInternalOpen(nextOpen);
+  };
 
   return (
     <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
       <button
-        aria-expanded={open}
+        aria-expanded={isOpen}
         className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition hover:bg-slate-50"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => changeOpen(!isOpen)}
         type="button"
       >
         <span className="min-w-0">
@@ -456,10 +533,10 @@ function IoCollapsiblePanel({ children, summary, title }: { children: React.Reac
           <span className="mt-0.5 block truncate text-xs text-slate-500">{summary}</span>
         </span>
         <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm">
-          <ChevronDown className={cn("h-4 w-4 transition-transform", open ? "rotate-180" : "")} />
+          <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen ? "rotate-180" : "")} />
         </span>
       </button>
-      {open ? <div className="border-t border-slate-200 bg-slate-50/80">{children}</div> : null}
+      {isOpen ? <div className="border-t border-slate-200 bg-slate-50/80">{children}</div> : null}
     </div>
   );
 }
@@ -691,15 +768,20 @@ function FluidScenarioLine({ title, detail, tone }: { title: string; detail: str
 }
 
 function FluidLedger({ rows }: { rows: IcuIntakeOutput[] }) {
+  const pageSize = 10;
+  const [page, setPage] = React.useState(1);
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const visibleRows = rows.slice(startIndex, startIndex + pageSize);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [rows]);
+
   return (
-    <Card className="border-slate-200">
-      <CardHeader className="border-b border-slate-100 bg-white">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Source Ledger</CardTitle>
-          <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-600">{rows.length} visible</span>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
+    <IoCollapsiblePanel summary={`${rows.length} visible | 10 entry per page`} title="Source Ledger">
+      <div className="bg-white">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-sm">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500">
@@ -710,7 +792,7 @@ function FluidLedger({ rows }: { rows: IcuIntakeOutput[] }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {visibleRows.map((row) => (
                 <tr className="border-b border-slate-100 last:border-0" key={row.id}>
                   <td className="px-3 py-2 font-semibold text-slate-900">
                     <span className="block">{row.time}</span>
@@ -738,8 +820,24 @@ function FluidLedger({ rows }: { rows: IcuIntakeOutput[] }) {
             </tbody>
           </table>
         </div>
-      </CardContent>
-    </Card>
+        {rows.length > pageSize ? (
+          <div className="flex flex-col gap-2 border-t border-slate-200 px-3 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <span className="font-medium text-slate-600">
+              Showing {startIndex + 1}-{Math.min(startIndex + pageSize, rows.length)} of {rows.length}
+            </span>
+            <div className="flex items-center gap-2">
+              <Button disabled={currentPage === 1} size="sm" type="button" variant="outline" onClick={() => setPage((value) => Math.max(1, value - 1))}>
+                Previous
+              </Button>
+              <span className="min-w-16 text-center text-xs font-bold text-slate-700">Page {currentPage}/{totalPages}</span>
+              <Button disabled={currentPage === totalPages} size="sm" type="button" variant="outline" onClick={() => setPage((value) => Math.min(totalPages, value + 1))}>
+                Next
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </IoCollapsiblePanel>
   );
 }
 
