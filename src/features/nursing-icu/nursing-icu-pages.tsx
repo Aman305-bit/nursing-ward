@@ -7510,22 +7510,16 @@ function WardNurseAssignedPatientsCommand({ patients }: { patients: IcuPatient[]
     <div className="space-y-2">
       <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-2 border-b border-slate-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-xl font-black tracking-tight text-slate-950">My Assigned Patients</h2>
-            <p className="mt-0.5 text-sm font-semibold text-slate-500">{activeWardNurse} | {activeWardUnit}</p>
+          <div className="relative w-full sm:max-w-[360px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+            <Input
+              className="h-10 pl-9 text-sm font-semibold"
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search patient, bed, MRN..."
+              value={search}
+            />
           </div>
-          <div className="flex flex-col gap-2 sm:min-w-[340px] sm:items-end">
-            <span className="inline-flex w-fit items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-black text-sky-700">{filteredRows.length} patient(s)</span>
-            <div className="relative w-full sm:max-w-[340px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
-              <Input
-                className="h-10 pl-9 text-sm font-semibold"
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search patient, bed, MRN..."
-                value={search}
-              />
-            </div>
-          </div>
+          <span className="inline-flex w-fit items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm font-black text-sky-700">{filteredRows.length} patient(s)</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1320px] border-collapse bg-white text-sm">
