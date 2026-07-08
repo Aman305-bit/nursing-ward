@@ -16169,7 +16169,9 @@ function IcuPatientCommandProfile({
   const permittedPatientTabs = nursingPermission
     ? icuPatientDetailTabs.filter((tab) => nursingPermission.patientTabs.includes(tab.id))
     : icuPatientDetailTabs;
-  const isLockedRaiseIssueFlow = initialTab === "collaborate" && searchParams.get("action") === "raise-unit-issue" && searchParams.get("locked") === "1";
+  const isLockedPatientFlow = searchParams.get("locked") === "1";
+  const isLockedRaiseIssueFlow = initialTab === "collaborate" && searchParams.get("action") === "raise-unit-issue" && isLockedPatientFlow;
+  const lockedTabQuery = isLockedRaiseIssueFlow ? "action=raise-unit-issue&locked=1" : isLockedPatientFlow ? "locked=1" : "";
   const visiblePatientTabs = isLockedRaiseIssueFlow
     ? icuPatientDetailTabs.filter((tab) => tab.id === "collaborate")
     : permittedPatientTabs;
@@ -16236,7 +16238,7 @@ function IcuPatientCommandProfile({
           {visiblePatientTabs.map((tab) => (
             <IcuPatientTabLink
               active={safeInitialTab === tab.id}
-              href={icuPatientDetailHref(patient.id, tab.id, undefined, isLockedRaiseIssueFlow ? "action=raise-unit-issue&locked=1" : "")}
+              href={icuPatientDetailHref(patient.id, tab.id, undefined, lockedTabQuery)}
               key={tab.id}
             >
               {tab.label}
@@ -16263,11 +16265,11 @@ function IcuPatientCommandProfile({
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="monitoring">
           <Tabs value={initialMonitoringTab}>
             <TabsList className="flex h-auto w-full min-w-max gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-1.5">
-              <IcuPatientTabLink active={initialMonitoringTab === "monitoring-overview"} href={icuPatientDetailHref(patient.id, "monitoring", "monitoring-overview")}>Monitoring Overview</IcuPatientTabLink>
-              <IcuPatientTabLink active={initialMonitoringTab === "24h-chart"} href={icuPatientDetailHref(patient.id, "monitoring", "24h-chart")}>24h Chart</IcuPatientTabLink>
-              <IcuPatientTabLink active={initialMonitoringTab === "ventilation"} href={icuPatientDetailHref(patient.id, "monitoring", "ventilation")}>Ventilation</IcuPatientTabLink>
-              <IcuPatientTabLink active={initialMonitoringTab === "intake-output"} href={icuPatientDetailHref(patient.id, "monitoring", "intake-output")}>Intake Output</IcuPatientTabLink>
-              <IcuPatientTabLink active={initialMonitoringTab === "device-snapshot"} href={icuPatientDetailHref(patient.id, "monitoring", "device-snapshot")}>Device Snapshot</IcuPatientTabLink>
+              <IcuPatientTabLink active={initialMonitoringTab === "monitoring-overview"} href={icuPatientDetailHref(patient.id, "monitoring", "monitoring-overview", lockedTabQuery)}>Monitoring Overview</IcuPatientTabLink>
+              <IcuPatientTabLink active={initialMonitoringTab === "24h-chart"} href={icuPatientDetailHref(patient.id, "monitoring", "24h-chart", lockedTabQuery)}>24h Chart</IcuPatientTabLink>
+              <IcuPatientTabLink active={initialMonitoringTab === "ventilation"} href={icuPatientDetailHref(patient.id, "monitoring", "ventilation", lockedTabQuery)}>Ventilation</IcuPatientTabLink>
+              <IcuPatientTabLink active={initialMonitoringTab === "intake-output"} href={icuPatientDetailHref(patient.id, "monitoring", "intake-output", lockedTabQuery)}>Intake Output</IcuPatientTabLink>
+              <IcuPatientTabLink active={initialMonitoringTab === "device-snapshot"} href={icuPatientDetailHref(patient.id, "monitoring", "device-snapshot", lockedTabQuery)}>Device Snapshot</IcuPatientTabLink>
             </TabsList>
 
             <TabsContent className="mt-4 space-y-4" value="monitoring-overview">
@@ -16601,11 +16603,13 @@ function IcuNeutralBadge({ children }: { children: React.ReactNode }) {
 }
 
 function IcuPatientMonitoring24HourChart({ patient }: { patient: IcuPatient }) {
+  const searchParams = useSearchParams();
   const [observationDate, setObservationDate] = React.useState(TODAY_DATE);
   const [dateTimeFilter, setDateTimeFilter] = React.useState<DateTimeFilterState>(defaultDateTimeFilter);
   const hourlyVitals = React.useMemo(() => buildIcuHourlyVitals(patient, observationDate), [observationDate, patient]);
   const filteredHourlyVitals = React.useMemo(() => applyDateTimeFilter(hourlyVitals, dateTimeFilter), [dateTimeFilter, hourlyVitals]);
   const criticalHours = filteredHourlyVitals.filter((entry) => entry.risk === "Critical" || entry.risk === "High").length;
+  const isLockedPatientFlow = searchParams.get("locked") === "1";
 
   return (
     <div className="space-y-4">
@@ -16618,13 +16622,15 @@ function IcuPatientMonitoring24HourChart({ patient }: { patient: IcuPatient }) {
             <StatusPill tone={criticalHours ? "danger" : "success"}>{criticalHours ? `${criticalHours} risk hours` : "Stable 24h"}</StatusPill>
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_180px_auto] xl:items-end">
-            <label className="space-y-1 text-sm">
-              <span className="font-medium text-foreground">Patient / bed</span>
-              <div className="flex h-10 items-center justify-between gap-2 rounded-md border border-input bg-surface-muted px-3 text-sm">
-                <span className="truncate font-semibold text-foreground">{patient.bedNo} - {patient.patientName}</span>
-                <Badge tone="info">Locked</Badge>
-              </div>
-            </label>
+            {isLockedPatientFlow ? null : (
+              <label className="space-y-1 text-sm">
+                <span className="font-medium text-foreground">Patient / bed</span>
+                <div className="flex h-10 items-center justify-between gap-2 rounded-md border border-input bg-surface-muted px-3 text-sm">
+                  <span className="truncate font-semibold text-foreground">{patient.bedNo} - {patient.patientName}</span>
+                  <Badge tone="info">Locked</Badge>
+                </div>
+              </label>
+            )}
             <label className="space-y-1 text-sm">
               <span className="font-medium text-foreground">Observation date</span>
               <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20" value={observationDate} onChange={(event) => {
@@ -21227,6 +21233,7 @@ function NurseVitalsEntryForm() {
   const [pulseQuality, setPulseQuality] = React.useState("");
   const [pulseAction, setPulseAction] = React.useState("");
   const selectedPatient = patientId ? icuPatients.find((patient) => patient.id === patientId) : undefined;
+  const isLockedPatientFlow = searchParams.get("locked") === "1" && Boolean(selectedPatient);
   const pulseDeficit = Math.max(0, Number(monitorHeartRate || 0) - Number(pulseRate || 0));
   const hasObservationInput = [respiratoryRate, o2Saturation, pulseRate, temperature, urineOutput, painScore, gcsScore].some((value) => value.trim().length > 0);
   const riskLevel = hasObservationInput
@@ -21282,13 +21289,15 @@ function NurseVitalsEntryForm() {
         <CardContent className="min-w-0 space-y-4 p-4">
           <div className="grid min-w-0 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             <NurseEntrySectionTitle>Patient and shift details</NurseEntrySectionTitle>
-            <label className="min-h-[66px] space-y-1 text-sm">
-              <span className="font-medium text-foreground">Patient</span>
-              <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20" value={patientId} onChange={(event) => setPatientId(event.target.value)}>
-                <option value="">Select patient</option>
-                {icuPatients.map((patient) => <option key={patient.id} value={patient.id}>{patient.patientName} - {patient.bedNo}</option>)}
-              </select>
-            </label>
+            {isLockedPatientFlow ? null : (
+              <label className="min-h-[66px] space-y-1 text-sm">
+                <span className="font-medium text-foreground">Patient</span>
+                <select className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring/20" value={patientId} onChange={(event) => setPatientId(event.target.value)}>
+                  <option value="">Select patient</option>
+                  {icuPatients.map((patient) => <option key={patient.id} value={patient.id}>{patient.patientName} - {patient.bedNo}</option>)}
+                </select>
+              </label>
+            )}
             <label className="min-h-[66px] space-y-1 text-sm">
               <span className="font-medium text-foreground">Date</span>
               <Input value={entryDate} onChange={(event) => setEntryDate(event.target.value)} type="date" />

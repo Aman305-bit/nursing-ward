@@ -223,25 +223,25 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
               {selectedPatient ? `${selectedPatient.patientName} | ${selectedPatient.bedNo} | ${selectedPatient.unit}` : "Select an assigned patient"}
             </p>
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <select
-              className="h-10 min-w-[260px] rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-70"
-              disabled={locked}
-              onChange={(event) => {
-                setSelectedPatientId(event.target.value);
-                setSelectedOrderId(null);
-              }}
-              value={selectedPatientId}
-            >
-              <option value="">Select patient</option>
-              {assignedPatients.map((patient) => (
-                <option key={patient.id} value={patient.id}>
-                  {patient.patientName} - {patient.bedNo}
-                </option>
-              ))}
-            </select>
-            {locked ? <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">Locked</span> : null}
-          </div>
+          {locked ? null : (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <select
+                className="h-10 min-w-[260px] rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:ring-2 focus:ring-ring/20"
+                onChange={(event) => {
+                  setSelectedPatientId(event.target.value);
+                  setSelectedOrderId(null);
+                }}
+                value={selectedPatientId}
+              >
+                <option value="">Select patient</option>
+                {assignedPatients.map((patient) => (
+                  <option key={patient.id} value={patient.id}>
+                    {patient.patientName} - {patient.bedNo}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         <div className="overflow-x-auto">
