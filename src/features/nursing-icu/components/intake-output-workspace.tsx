@@ -77,6 +77,7 @@ type IoDraft = {
 
 type IntakeOutputWorkspaceProps = {
   entryOnly?: boolean;
+  hidePatientStrip?: boolean;
   initialPatientId?: string;
   lockedPatientId?: string;
   initialView?: IoView;
@@ -166,6 +167,7 @@ export function IntakeOutputWorkspace(props: IntakeOutputWorkspaceProps = {}) {
 
 function IntakeOutputWorkspaceInner({
   entryOnly = false,
+  hidePatientStrip = false,
   initialPatientId,
   lockedPatientId,
   initialView = "Hourly",
@@ -303,7 +305,7 @@ function IntakeOutputWorkspaceInner({
 
   return (
     <div className="space-y-4">
-      {selectedPatient ? <IntakeOutputPatientStrip patient={selectedPatient} /> : null}
+      {selectedPatient && !hidePatientStrip ? <IntakeOutputPatientStrip patient={selectedPatient} /> : null}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <div className="min-w-0 flex-1">
           <IoCollapsiblePanel

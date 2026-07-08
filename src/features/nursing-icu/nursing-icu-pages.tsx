@@ -16653,7 +16653,7 @@ function IcuPatientMonitoring24HourChart({ patient }: { patient: IcuPatient }) {
 
 function IcuPatientMonitoringIntakeOutput({ patient }: { patient: IcuPatient }) {
   return (
-    <IntakeOutputWorkspace initialMode="Table" initialPatientId={patient.id} initialView="Hourly" lockedPatientId={patient.id} />
+    <IntakeOutputWorkspace hidePatientStrip initialMode="Table" initialPatientId={patient.id} initialView="Hourly" lockedPatientId={patient.id} />
   );
 }
 
