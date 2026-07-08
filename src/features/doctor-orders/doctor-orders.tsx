@@ -220,7 +220,7 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
           <div>
             <h2 className="text-base font-bold text-foreground">Doctor Orders</h2>
             <p className="mt-1 text-xs font-medium text-muted-foreground">
-              {selectedPatient ? `${selectedPatient.patientName} | ${selectedPatient.bedNo} | ${selectedPatient.unit}` : "Select an assigned patient"}
+              {selectedPatient ? `${selectedPatient.bedNo} | ${selectedPatient.unit}` : "Select an assigned patient"}
             </p>
           </div>
           {locked ? null : (
@@ -341,7 +341,7 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
                   {selectedOrder?.departmentLabel ?? "Order"} order
                 </Dialog.Title>
                 <Dialog.Description className="mt-1 truncate text-xs font-medium text-muted-foreground">
-                  {selectedPatient ? `${selectedPatient.patientName} | ${selectedPatient.bedNo} | ${selectedPatient.unit}` : "Selected patient"}
+                  {selectedPatient ? `${selectedPatient.bedNo} | ${selectedPatient.unit}` : "Selected patient"}
                   {selectedOrder ? ` | ${selectedOrder.order}` : ""}
                 </Dialog.Description>
               </div>

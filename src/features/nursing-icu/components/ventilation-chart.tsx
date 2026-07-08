@@ -333,7 +333,7 @@ export function VentilationChartWorkspace({ patient }: VentilationChartWorkspace
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <div>
             <h3 className="text-sm font-bold text-slate-950">Hourly ventilation parameters</h3>
-            <p className="mt-1 text-xs font-medium text-slate-600">{patient.bedNo} - {patient.patientName} | {latestMode} | FiO2 {latestFiO2}% | PEEP {latestPeep}</p>
+            <p className="mt-1 text-xs font-medium text-slate-600">{latestMode} | FiO2 {latestFiO2}% | PEEP {latestPeep}</p>
           </div>
           <span className="text-xs font-semibold text-slate-500">0000 - 2300</span>
         </div>
