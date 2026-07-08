@@ -16168,13 +16168,20 @@ function IcuPatientCommandProfile({
   initialShiftFocus: IcuShiftFocus;
 }) {
   const { role } = useRole();
+  const searchParams = useSearchParams();
   const [previewResultId, setPreviewResultId] = React.useState<string | null>(null);
   const [ordersSubTab, setOrdersSubTab] = React.useState<MedicationOrdersSubTab>(initialOrdersSubTab);
   const nursingPermission = getNursingRolePermission(role);
-  const visiblePatientTabs = nursingPermission
+  const permittedPatientTabs = nursingPermission
     ? icuPatientDetailTabs.filter((tab) => nursingPermission.patientTabs.includes(tab.id))
     : icuPatientDetailTabs;
-  const safeInitialTab = visiblePatientTabs.some((tab) => tab.id === initialTab) ? initialTab : visiblePatientTabs[0]?.id ?? "overview";
+  const isLockedRaiseIssueFlow = initialTab === "collaborate" && searchParams.get("action") === "raise-unit-issue" && searchParams.get("locked") === "1";
+  const visiblePatientTabs = isLockedRaiseIssueFlow
+    ? icuPatientDetailTabs.filter((tab) => tab.id === "collaborate")
+    : permittedPatientTabs;
+  const safeInitialTab = isLockedRaiseIssueFlow
+    ? "collaborate"
+    : visiblePatientTabs.some((tab) => tab.id === initialTab) ? initialTab : visiblePatientTabs[0]?.id ?? "overview";
 
   if (!patient) {
     return (
@@ -16233,7 +16240,11 @@ function IcuPatientCommandProfile({
       <Tabs className="p-0" value={safeInitialTab}>
         <TabsList className="flex h-auto w-full min-w-max gap-2 overflow-x-auto rounded-none border-b border-slate-100 bg-slate-50 px-4 py-3">
           {visiblePatientTabs.map((tab) => (
-            <IcuPatientTabLink active={safeInitialTab === tab.id} href={icuPatientDetailHref(patient.id, tab.id)} key={tab.id}>
+            <IcuPatientTabLink
+              active={safeInitialTab === tab.id}
+              href={icuPatientDetailHref(patient.id, tab.id, undefined, isLockedRaiseIssueFlow ? "action=raise-unit-issue&locked=1" : "")}
+              key={tab.id}
+            >
               {tab.label}
             </IcuPatientTabLink>
           ))}
