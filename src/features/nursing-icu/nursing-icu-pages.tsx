@@ -477,7 +477,6 @@ function NursingIcuModulePageInner({
         />
       ) : null}
 
-      {useNurseEntryReviewTabs ? <NurseEntryReviewTabs activePage={page} /> : null}
       {!hideModuleTabs ? <NursingIcuTabs activePage={page} /> : null}
 
       {!streamlinedPage ? (
@@ -21147,6 +21146,8 @@ function NurseReview() {
 
   return (
     <div className="space-y-4">
+      <NurseEntryReviewTabs activePage="nurse-review" />
+
       <CollapsibleCommandPanel title="Nurse Review Worklist & Filters" summary={filterSummary}>
         <div className="space-y-3 p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -21263,6 +21264,8 @@ function NurseVitalsEntryForm() {
           </div>
         </div>
       ) : null}
+
+      <NurseEntryReviewTabs activePage="vitals" />
 
       <Card className="min-w-0 max-w-full overflow-hidden">
         <CardContent className="min-w-0 space-y-4 p-4">
