@@ -17324,7 +17324,12 @@ function IcuPatientEventsWorkspace({ initialFocus, patient, results }: { initial
   const events = React.useMemo(() => buildIcuPatientEvents(activePatient, activeResults), [activePatient, activeResults]);
   const [typeFilter, setTypeFilter] = React.useState(() => initialFocus === "open-alerts" ? "Alert" : "All events");
   const typeOptions = ["All events", "Vitals", "I/O", "Result", "Medication", "Alert"];
-  const filteredEvents = events.filter((event) => typeFilter === "All events" || event.type === typeFilter);
+  const filteredEvents = React.useMemo(() => events.filter((event) => typeFilter === "All events" || event.type === typeFilter), [events, typeFilter]);
+  const pagination = useIcuCommandPagination(filteredEvents);
+
+  React.useEffect(() => {
+    pagination.setPage(1);
+  }, [activePatient.id, pagination.setPage, typeFilter]);
 
   return (
     <div className="space-y-4">
@@ -17360,7 +17365,7 @@ function IcuPatientEventsWorkspace({ initialFocus, patient, results }: { initial
               </tr>
             </thead>
             <tbody>
-              {filteredEvents.map((event) => (
+              {pagination.pageRows.map((event) => (
                 <tr className="align-top even:bg-slate-50/45 hover:bg-sky-50/70 [&:last-child>td]:border-0" key={event.id}>
                   <td className="whitespace-nowrap border-b border-slate-100 px-3 py-3 text-sm font-bold text-slate-800">{event.time}</td>
                   <td className="border-b border-slate-100 px-3 py-3">
@@ -17380,6 +17385,7 @@ function IcuPatientEventsWorkspace({ initialFocus, patient, results }: { initial
           </table>
         </div>
         {!filteredEvents.length ? <div className="p-6 text-center text-sm font-semibold text-slate-500">No patient event matched selected filters.</div> : null}
+        {filteredEvents.length > ICU_COMMAND_PAGE_SIZE ? <IcuCommandPaginationControls {...pagination} /> : null}
       </div>
     </div>
   );
