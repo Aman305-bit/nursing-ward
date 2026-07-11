@@ -17342,14 +17342,22 @@ type IcuPatientEventRow = {
   tone: DashboardCellTone;
 };
 
+const ICU_PATIENT_EVENT_TYPE_OPTIONS = ["All events", "Vitals", "I/O", "Result", "Medication", "Alert"];
+
 function IcuPatientEventsWorkspace({
+  eventTypeFilter,
   hidePatientSelector = false,
+  hideEventFilterBar = false,
   initialFocus,
+  onEventTypeFilterChange,
   patient,
   results,
 }: {
+  eventTypeFilter?: string;
+  hideEventFilterBar?: boolean;
   hidePatientSelector?: boolean;
   initialFocus: IcuEventFocus;
+  onEventTypeFilterChange?: (value: string) => void;
   patient: IcuPatient;
   results: IcuPatientResultRow[];
 }) {
@@ -17357,8 +17365,9 @@ function IcuPatientEventsWorkspace({
   const activePatient = hidePatientSelector ? patient : patientSelection.patient;
   const activeResults = activePatient.id === patient.id ? results : buildIcuPatientResultRows(activePatient);
   const events = React.useMemo(() => buildIcuPatientEvents(activePatient, activeResults), [activePatient, activeResults]);
-  const [typeFilter, setTypeFilter] = React.useState(() => initialFocus === "open-alerts" ? "Alert" : "All events");
-  const typeOptions = ["All events", "Vitals", "I/O", "Result", "Medication", "Alert"];
+  const [internalTypeFilter, setInternalTypeFilter] = React.useState(() => initialFocus === "open-alerts" ? "Alert" : "All events");
+  const typeFilter = eventTypeFilter ?? internalTypeFilter;
+  const updateTypeFilter = onEventTypeFilterChange ?? setInternalTypeFilter;
   const filteredEvents = React.useMemo(() => events.filter((event) => typeFilter === "All events" || event.type === typeFilter), [events, typeFilter]);
   const pagination = useIcuCommandPagination(filteredEvents);
 
@@ -17378,14 +17387,16 @@ function IcuPatientEventsWorkspace({
       ) : null}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.05)]">
-        <div className="flex flex-col gap-3 border-b border-slate-100 bg-white p-4 sm:flex-row sm:items-end">
-          <div className="w-full sm:w-56">
-            <NativeSelect label="Event type" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
+        {!hideEventFilterBar ? (
+          <div className="flex flex-col gap-3 border-b border-slate-100 bg-white p-4 sm:flex-row sm:items-end">
+            <div className="w-full sm:w-56">
+              <NativeSelect label="Event type" value={typeFilter} onChange={updateTypeFilter} options={ICU_PATIENT_EVENT_TYPE_OPTIONS} />
+            </div>
+            <Button variant="outline" onClick={() => {
+              updateTypeFilter("All events");
+            }}>Reset</Button>
           </div>
-          <Button variant="outline" onClick={() => {
-            setTypeFilter("All events");
-          }}>Reset</Button>
-        </div>
+        ) : null}
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1180px] border-separate border-spacing-0 text-left text-sm">
@@ -17435,6 +17446,7 @@ export function WardNursePatientEventUpdatePage() {
     [activeWardNurse],
   );
   const [patientId, setPatientId] = React.useState("");
+  const [eventTypeFilter, setEventTypeFilter] = React.useState("All events");
   const selectedPatient = assignedPatients.find((patient) => patient.id === patientId) ?? null;
   const selectedResults = React.useMemo(
     () => (selectedPatient ? buildIcuPatientResultRows(selectedPatient) : []),
@@ -17444,19 +17456,43 @@ export function WardNursePatientEventUpdatePage() {
   return (
     <div className="min-w-0 max-w-full space-y-4 pb-8">
       {selectedPatient ? <WardNurseSelectedPatientHeader patient={selectedPatient} /> : null}
-      <div className="max-w-md">
-        <WardNursePatientContextSelector
-          label="Patient"
-          onChange={setPatientId}
-          patients={assignedPatients}
-          placeholder="Select patient"
-          value={patientId}
-        />
+      <div className="max-w-full rounded-md border border-slate-200 bg-white p-3 shadow-sm md:w-fit">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end">
+          <label className="block w-full space-y-1 text-sm md:w-[26rem]">
+            <span className="font-semibold text-slate-800">Patient</span>
+            <select
+              className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-sky-200"
+              onChange={(event) => setPatientId(event.target.value)}
+              value={patientId}
+            >
+              <option value="">Select patient</option>
+              {assignedPatients.map((patient) => (
+                <option key={patient.id} value={patient.id}>{patient.bedNo} - {patient.patientName}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block w-full space-y-1 text-sm md:w-56">
+            <span className="font-semibold text-slate-800">Event</span>
+            <select
+              className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-sky-200"
+              onChange={(event) => setEventTypeFilter(event.target.value)}
+              value={eventTypeFilter}
+            >
+              {ICU_PATIENT_EVENT_TYPE_OPTIONS.map((option) => (
+                <option key={option}>{option}</option>
+              ))}
+            </select>
+          </label>
+          <Button variant="outline" onClick={() => setEventTypeFilter("All events")}>Reset</Button>
+        </div>
       </div>
       {selectedPatient ? (
         <IcuPatientEventsWorkspace
+          eventTypeFilter={eventTypeFilter}
           hidePatientSelector
+          hideEventFilterBar
           initialFocus="all"
+          onEventTypeFilterChange={setEventTypeFilter}
           patient={selectedPatient}
           results={selectedResults}
         />
