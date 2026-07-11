@@ -16338,7 +16338,7 @@ function IcuPatientCommandProfile({
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="orders">
           <Tabs value={ordersSubTab} onValueChange={(value) => setOrdersSubTab(value as MedicationOrdersSubTab)}>
             <TabsList className="flex h-auto w-full min-w-max gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-1.5">
-              <TabsTrigger value="pending-work">Pending Work</TabsTrigger>
+              <TabsTrigger value="pending-work">Pending Actions</TabsTrigger>
               <TabsTrigger value="medicine-chart">Medicine Chart</TabsTrigger>
             </TabsList>
 
@@ -16389,32 +16389,30 @@ function IcuPatientPendingWorkTable({
   tasks: IcuTask[];
 }) {
   const rows = [
-    ...patientInstructions.map((row) => ({
-      id: `instruction-${row.id}`,
-      type: "Doctor order",
-      item: row.instructionType,
-      detail: row.instruction,
-      due: row.dueTime,
-      assignedTo: row.assignedNurse,
-      status: row.status,
-      source: row.doctor,
-      actionLabel: "Open care plan",
-      href: `/icu-command-center/clinical-workspace/orders-care-plans?patientId=${patient.id}`,
-      tone: toneForStatus(row.status),
-    })),
-    ...tasks.map((row) => ({
-      id: `task-${row.id}`,
-      type: "Nursing task",
-      item: row.taskType,
-      detail: row.title,
-      due: row.dueTime,
-      assignedTo: row.assignedTo,
-      status: row.status,
-      source: row.createdBy,
-      actionLabel: "Open tasks",
-      href: `/icu-command-center/nursing/tasks-assessments?patientId=${patient.id}`,
-      tone: toneForStatus(row.status),
-    })),
+    ...patientInstructions.map((row) => {
+      const meta = icuPendingInstructionMeta(row, patient);
+      return {
+        id: `instruction-${row.id}`,
+        category: "Doctor order",
+        pendingWork: row.instructionType,
+        detail: row.instruction,
+        due: row.dueTime,
+        source: row.doctor,
+        ...meta,
+      };
+    }),
+    ...tasks.map((row) => {
+      const meta = icuPendingTaskMeta(row, patient);
+      return {
+        id: `task-${row.id}`,
+        category: "Nursing task",
+        pendingWork: row.taskType,
+        detail: row.title,
+        due: row.dueTime,
+        source: row.createdBy,
+        ...meta,
+      };
+    }),
   ];
   const urgentRows = rows.filter((row) => row.tone === "critical" || row.tone === "danger").length;
 
@@ -16422,9 +16420,9 @@ function IcuPatientPendingWorkTable({
     <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-2 border-b border-slate-200 bg-slate-50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-sm font-black text-slate-950">Pending tasks and orders</p>
+          <p className="text-sm font-black text-slate-950">Pending nursing actions</p>
           <p className="mt-0.5 truncate text-xs font-semibold text-slate-500">
-            {patient.bedNo} | {patient.unit}
+            Orders, checklist, charting, medication, and follow-up work for {patient.bedNo} | {patient.unit}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -16433,14 +16431,14 @@ function IcuPatientPendingWorkTable({
         </div>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[980px] border-collapse text-sm">
+        <table className="w-full min-w-[1180px] border-collapse text-sm">
           <thead className="bg-white text-[11px] uppercase text-sky-700">
             <tr className="border-b border-slate-200">
-              <th className="px-3 py-3 text-left">Type</th>
-              <th className="px-3 py-3 text-left">Pending item</th>
+              <th className="px-3 py-3 text-left">Category</th>
+              <th className="px-3 py-3 text-left">Pending work</th>
+              <th className="px-3 py-3 text-left">Required nursing action</th>
               <th className="px-3 py-3 text-left">Due</th>
-              <th className="px-3 py-3 text-left">Assigned to</th>
-              <th className="px-3 py-3 text-left">Source</th>
+              <th className="px-3 py-3 text-left">Ordered / Created by</th>
               <th className="px-3 py-3 text-center">Status</th>
               <th className="px-3 py-3 text-right">Action</th>
             </tr>
@@ -16449,14 +16447,16 @@ function IcuPatientPendingWorkTable({
             {rows.map((row) => (
               <tr className="hover:bg-sky-50/40" key={row.id}>
                 <td className="px-3 py-3 align-middle">
-                  <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700">{row.type}</span>
+                  <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-700">{row.category}</span>
                 </td>
                 <td className="px-3 py-3 align-middle">
-                  <p className="font-black text-slate-950">{row.item}</p>
+                  <p className="font-black text-slate-950">{row.pendingWork}</p>
                   <p className="mt-0.5 max-w-[360px] truncate text-xs font-semibold text-slate-500">{row.detail}</p>
                 </td>
+                <td className="px-3 py-3 align-middle">
+                  <p className="max-w-[340px] text-sm font-bold text-slate-800">{row.requiredAction}</p>
+                </td>
                 <td className="px-3 py-3 align-middle font-bold text-slate-800">{row.due}</td>
-                <td className="px-3 py-3 align-middle font-semibold text-slate-700">{row.assignedTo}</td>
                 <td className="px-3 py-3 align-middle text-slate-700">{row.source}</td>
                 <td className="px-3 py-3 text-center align-middle"><StatusPill tone={row.tone}>{row.status}</StatusPill></td>
                 <td className="px-3 py-3 text-right align-middle">
@@ -16476,6 +16476,140 @@ function IcuPatientPendingWorkTable({
       </div>
     </div>
   );
+}
+
+function icuPendingInstructionMeta(row: DoctorInstruction, patient: IcuPatient) {
+  const text = `${row.instructionType} ${row.instruction} ${row.remarks}`.toLowerCase();
+  const baseTone = icuPendingWorkTone(row.status, row.priority);
+
+  if (text.includes("transfer") || patient.currentStatus === "Ready for transfer" || patient.currentStatus === "Discharge ordered") {
+    return {
+      actionLabel: "Prepare Transfer",
+      href: `/icu-command-center/patients/discharges?focus=transfer&unit=${encodeURIComponent(patient.unit)}&patientId=${patient.id}`,
+      requiredAction: "Prepare bedside transfer handover, clear nurse checklist, and coordinate final movement.",
+      status: row.status === "In progress" ? "Transfer prep in progress" : row.status === "Completed" ? "Transfer prep done" : "Transfer prep pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  if (text.includes("monitor") || text.includes("vital") || text.includes("bp") || text.includes("spo2") || text.includes("gcs")) {
+    return {
+      actionLabel: "Enter Vitals",
+      href: `/icu-command-center/nursing/nurse-entry?patientId=${patient.id}&locked=1`,
+      requiredAction: "Record bedside vitals, EWS/MEWS, and escalate if values remain abnormal.",
+      status: row.status === "Completed" ? "Vitals documented" : "Vitals follow-up pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  if (text.includes("urine") || text.includes("output") || text.includes("intake") || text.includes("fluid")) {
+    return {
+      actionLabel: "Update I/O",
+      href: `/icu-command-center/nursing/intake-output?patientId=${patient.id}&locked=1`,
+      requiredAction: "Update intake/output chart and document fluid balance trend.",
+      status: row.status === "Completed" ? "I/O updated" : "I/O update pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  if (text.includes("abg") || text.includes("result") || text.includes("lab") || text.includes("report")) {
+    return {
+      actionLabel: "Review Results",
+      href: icuPatientDetailHref(patient.id, "results"),
+      requiredAction: "Check result availability, document follow-up, and inform doctor if abnormal.",
+      status: row.status === "Completed" ? "Result follow-up done" : "Result follow-up pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  return {
+    actionLabel: "Review Order",
+    href: icuPatientDetailHref(patient.id, "orders", undefined, "ordersTab=pending-work"),
+    requiredAction: "Review doctor instruction, complete bedside action, and document response.",
+    status: row.status === "Completed" ? "Completed" : row.status === "In progress" ? "In progress" : "Nursing action pending",
+    tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+  };
+}
+
+function icuPendingTaskMeta(row: IcuTask, patient: IcuPatient) {
+  const text = `${row.taskType} ${row.title} ${row.remarks} ${row.source ?? ""}`.toLowerCase();
+  const baseTone = icuPendingWorkTone(row.status, row.priority);
+
+  if (text.includes("transfer") || text.includes("clearance") || text.includes("checklist")) {
+    return {
+      actionLabel: "Open Checklist",
+      href: `/icu-command-center/nursing/shift-handover?patientId=${patient.id}&focus=transfer&locked=1`,
+      requiredAction: "Complete nurse transfer checklist, verify lines/devices/medicines, and prepare handover.",
+      status: row.status === "Completed" ? "Checklist done" : row.status === "In progress" ? "Checklist in progress" : "Checklist pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  if (text.includes("medication") || text.includes("medicine") || text.includes("dose") || text.includes("antibiotic")) {
+    return {
+      actionLabel: "Administer Medicine",
+      href: `/icu-command-center/nursing/medication-administration?patientId=${patient.id}&locked=1`,
+      requiredAction: "Verify order, administer or hold with reason, and document eMAR status.",
+      status: row.status === "Overdue" ? "Medication overdue" : row.status === "Completed" ? "Medication documented" : "Administration due",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  if (text.includes("vital") || text.includes("neuro") || text.includes("gcs") || text.includes("respiratory") || text.includes("abg")) {
+    return {
+      actionLabel: "Enter Vitals",
+      href: `/icu-command-center/nursing/nurse-entry?patientId=${patient.id}&locked=1`,
+      requiredAction: "Repeat bedside assessment, enter vitals/EWS, and escalate if threshold is crossed.",
+      status: row.status === "Completed" ? "Observation done" : "Observation pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  if (text.includes("intake") || text.includes("output") || text.includes("fluid") || text.includes("urine") || text.includes("drain")) {
+    return {
+      actionLabel: "Update I/O",
+      href: `/icu-command-center/nursing/intake-output?patientId=${patient.id}&locked=1`,
+      requiredAction: "Record intake/output, drain or urine trend, and flag abnormal balance.",
+      status: row.status === "Completed" ? "I/O documented" : "I/O charting pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  if (text.includes("result") || text.includes("lab") || text.includes("sample") || text.includes("electrolyte")) {
+    return {
+      actionLabel: "Review Results",
+      href: icuPatientDetailHref(patient.id, "results"),
+      requiredAction: "Check sample/result status, document follow-up, and notify doctor if pending or abnormal.",
+      status: row.status === "Completed" ? "Result follow-up done" : "Result follow-up pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  if (text.includes("transfusion") || text.includes("blood")) {
+    return {
+      actionLabel: "Record Monitoring",
+      href: `/icu-command-center/nursing/nurse-entry?patientId=${patient.id}&locked=1`,
+      requiredAction: "Record transfusion vitals, reaction check, and bedside monitoring note.",
+      status: row.status === "Completed" ? "Monitoring done" : "Monitoring pending",
+      tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+    };
+  }
+
+  return {
+    actionLabel: "Open Task",
+    href: `/icu-command-center/nursing/tasks-assessments?patientId=${patient.id}&locked=1`,
+    requiredAction: "Complete assigned bedside task and document nursing response.",
+    status: row.status === "Completed" ? "Completed" : row.status === "In progress" ? "In progress" : "Nursing task pending",
+    tone: row.status === "Completed" ? "success" as StatusTone : baseTone,
+  };
+}
+
+function icuPendingWorkTone(status: string, priority: IcuPriority): StatusTone {
+  if (status === "Completed") return "success";
+  if (status === "Overdue" || priority === "Critical") return "critical";
+  if (status === "Escalated" || priority === "High") return "danger";
+  if (status === "Pending" || status === "In progress" || status === "Assigned") return "warning";
+  return toneForStatus(status);
 }
 
 function IcuPatientMonitoringOverview({
@@ -27262,6 +27396,12 @@ const icuDischargeRows: IcuDischargeWorkflowRow[] = [
 
 function TransferDischarge() {
   const { queryFocus, queryUnit } = useCommandRouteContext();
+  const searchParams = useSearchParams();
+  const queryPatientId = searchParams.get("patientId")?.trim() ?? "";
+  const queryPatientRow = React.useMemo(
+    () => queryPatientId ? icuDischargeRows.find((row) => row.patient.id === queryPatientId) ?? null : null,
+    [queryPatientId],
+  );
   const [search, setSearch] = React.useState("");
   const [unit, setUnit] = React.useState(queryUnit || "All ICU units");
   const [destination, setDestination] = React.useState("All destinations");
@@ -27272,6 +27412,12 @@ function TransferDischarge() {
   React.useEffect(() => {
     if (queryUnit) setUnit(queryUnit);
   }, [queryUnit]);
+  React.useEffect(() => {
+    if (!queryPatientRow) return;
+    setSearch(queryPatientRow.patient.bedNo);
+    setUnit(queryPatientRow.patient.unit);
+    setActiveWorkflow({ row: queryPatientRow, initialTab: "workflow" });
+  }, [queryPatientRow]);
   const filteredRows = React.useMemo(() => {
     const query = search.trim().toLowerCase();
     return icuDischargeRows.filter((row) => {
