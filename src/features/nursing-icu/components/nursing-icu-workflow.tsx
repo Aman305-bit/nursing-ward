@@ -4768,7 +4768,7 @@ export function MedicationTimelineWorkspace() {
           </span>
           <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
-        <div className="grid gap-3 border-t border-border p-4 md:grid-cols-2 xl:grid-cols-[minmax(240px,1fr)_220px_180px_220px_auto] xl:items-end">
+        <div className="grid gap-3 border-t border-border p-4 md:grid-cols-2 xl:grid-cols-4 xl:items-end 2xl:grid-cols-[minmax(240px,1fr)_220px_180px_minmax(220px,1fr)_auto]">
           {isLockedPatientFlow ? null : (
             <label className="space-y-1 text-sm md:col-span-2 xl:col-span-1">
               <span className="font-medium text-foreground">Patient</span>
@@ -4791,16 +4791,16 @@ export function MedicationTimelineWorkspace() {
             <Input type="date" value={medicationDate} onChange={(event) => setMedicationDate(event.target.value)} />
           </label>
           <MedicationLabeledSelect label="Shift" value={shift} onChange={(value) => setShift(value as (typeof medicationShiftOptions)[number])} options={[...medicationShiftOptions]} />
-          <div className="space-y-1 text-sm">
+          <div className="min-w-0 space-y-1 text-sm">
             <span className="font-medium text-foreground">Search</span>
             <label className="space-y-1 text-sm">
-              <div className="relative">
+              <div className="relative min-w-0">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input className="pl-9" placeholder="Medicine, patient, bed, doctor..." value={query} onChange={(event) => setQuery(event.target.value)} />
+                <Input className="min-w-0 pl-9" placeholder="Medicine, patient, bed, doctor..." value={query} onChange={(event) => setQuery(event.target.value)} />
               </div>
             </label>
           </div>
-          <Button className="w-full" variant="outline" onClick={() => {
+          <Button className="w-full min-w-0 justify-center px-3" variant="outline" onClick={() => {
             setQuery("");
             setUnitFilter(queryUnit || "All ICU units");
             setPatientId(focusedPatient?.id ?? "");

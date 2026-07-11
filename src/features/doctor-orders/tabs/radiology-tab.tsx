@@ -18,22 +18,6 @@ type SummarySortKey = keyof Pick<RadiologySummaryRow, "selectedTests" | "loincCo
 const selectedByDefault = ["xray-chest"];
 const selectedGroupDefault: string[] = [];
 
-function normalizeRadiologySelection(value: string) {
-  return value.toLowerCase().replace(/[-_]/g, " ").trim();
-}
-
-function prescribedRadiologyMatches(value: string, labels: string[]) {
-  const normalizedValue = normalizeRadiologySelection(value);
-  const tokens = normalizedValue.split(/\s+/).filter((token) => token.length > 2);
-  return labels.some((label) => {
-    const normalizedLabel = normalizeRadiologySelection(label);
-    if (!normalizedLabel) return false;
-    return normalizedValue.includes(normalizedLabel)
-      || normalizedLabel.split(/\s+/).some((token) => token.length > 2 && normalizedValue.includes(token))
-      || tokens.some((token) => normalizedLabel.includes(token));
-  });
-}
-
 function buildRadiologySnapshotRows(testIds: string[], groupIds: string[]) {
   const rows: RadiologySummaryRow[] = [];
 
@@ -108,7 +92,7 @@ function buildRadiologySnapshotBlocks(testIds: string[], groupIds: string[]) {
   return blocks.length ? blocks : radiologyResultBlocks;
 }
 
-export function RadiologyTab({ prescribedOrder, prescribedInstruction }: { prescribedOrder?: string; prescribedInstruction?: string } = {}) {
+export function RadiologyTab() {
   const [activeTab, setActiveTab] = React.useState<MainTab>("test-order");
   const [search, setSearch] = React.useState("");
   const [selectedTestIds, setSelectedTestIds] = React.useState<string[]>(selectedByDefault);
@@ -119,24 +103,6 @@ export function RadiologyTab({ prescribedOrder, prescribedInstruction }: { presc
   const [savedResultList, setSavedResultList] = React.useState<RadiologyResultBlock[]>(() => buildRadiologySnapshotBlocks(selectedByDefault, selectedGroupDefault));
   const [summarySort, setSummarySort] = React.useState<{ key: SummarySortKey; direction: "asc" | "desc" }>({ key: "selectedTests", direction: "asc" });
   const [billingNote, setBillingNote] = React.useState("Radiology order ready.");
-  const appliedPrescriptionRef = React.useRef("");
-
-  React.useEffect(() => {
-    const prescription = `${prescribedOrder ?? ""} ${prescribedInstruction ?? ""}`.trim();
-    if (!prescription || appliedPrescriptionRef.current === prescription) return;
-    appliedPrescriptionRef.current = prescription;
-    const matchedTestIds = radiologyTestList
-      .filter((test) => prescribedRadiologyMatches(prescription, [test.name, test.description, test.code ?? "", test.modality, test.category ?? ""]))
-      .map((test) => test.id);
-    const matchedGroupIds = radiologyTestGroups
-      .filter((group) => prescribedRadiologyMatches(prescription, [group.name, group.modality]))
-      .map((group) => group.id);
-
-    setSearch(prescribedOrder ?? "");
-    setSelectedTestIds((current) => Array.from(new Set([...matchedTestIds, ...current])));
-    setSelectedGroupIds((current) => Array.from(new Set([...matchedGroupIds, ...current])));
-    if (matchedTestIds.length || matchedGroupIds.length) setActiveTab("test-order");
-  }, [prescribedInstruction, prescribedOrder]);
 
   const filteredTests = React.useMemo(() => {
     const query = search.trim().toLowerCase();
