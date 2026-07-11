@@ -7,7 +7,7 @@ import * as React from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { doctorInstructions, icuPatients, medicationRows, type IcuPatient } from "@/features/nursing-icu/nursing-icu-data";
+import { doctorInstructions, icuPatients, icuTasks, type IcuPatient } from "@/features/nursing-icu/nursing-icu-data";
 
 import { BloodRequestTab } from "./tabs/blood-request-tab";
 import { DrugsTab } from "./tabs/drugs-tab";
@@ -55,15 +55,21 @@ type WardNurseOrder = {
 const wardNurseName = "Ward Nurse Kavita";
 
 const departmentByInstruction: Array<{ match: string; tab: OrderTab["id"]; label: string }> = [
+  { match: "medication", tab: "drugs", label: "Drug" },
+  { match: "medicine", tab: "drugs", label: "Drug" },
+  { match: "antibiotic", tab: "drugs", label: "Drug" },
+  { match: "blood", tab: "blood", label: "Blood" },
   { match: "abg", tab: "lab", label: "Laboratory" },
   { match: "electrolyte", tab: "lab", label: "Laboratory" },
   { match: "sample", tab: "lab", label: "Laboratory" },
+  { match: "result", tab: "lab", label: "Laboratory" },
   { match: "transfusion", tab: "blood", label: "Blood" },
   { match: "radiology", tab: "radiology", label: "Radiology" },
   { match: "x-ray", tab: "radiology", label: "Radiology" },
   { match: "ct", tab: "radiology", label: "Radiology" },
   { match: "transfer", tab: "procedures", label: "Procedure" },
   { match: "discharge", tab: "procedures", label: "Procedure" },
+  { match: "drain", tab: "procedures", label: "Procedure" },
 ];
 
 function assignedWardPatients() {
@@ -99,23 +105,8 @@ function instructionDepartment(instruction: string) {
 }
 
 function patientOrders(patient: IcuPatient): WardNurseOrder[] {
-  const medicationOrders = medicationRows
-    .filter((medication) => medication.patientId === patient.id)
-    .slice(0, 3)
-    .map((medication) => ({
-      id: `med-${medication.id}`,
-      patientId: patient.id,
-      order: `${medication.medication} ${medication.dose}`,
-      department: "drugs" as const,
-      departmentLabel: "Drug",
-      orderedBy: patient.dutyDoctor,
-      time: medication.scheduledTime,
-      status: medication.status,
-      instruction: `${medication.route} | ${medication.frequency}`,
-    }));
-
   const doctorOrders = doctorInstructions
-    .filter((instruction) => instruction.patientId === patient.id)
+    .filter((instruction) => instruction.patientId === patient.id && instruction.status !== "Completed")
     .map((instruction) => {
       const department = instructionDepartment(`${instruction.instructionType} ${instruction.instruction}`);
       return {
@@ -131,32 +122,24 @@ function patientOrders(patient: IcuPatient): WardNurseOrder[] {
       };
     });
 
-  const fallbackOrders: WardNurseOrder[] = [
-    {
-      id: `lab-${patient.id}`,
-      patientId: patient.id,
-      order: patient.criticalityScore >= 7 ? "ABG, CBC, electrolytes" : "CBC and renal profile",
-      department: "lab",
-      departmentLabel: "Laboratory",
-      orderedBy: patient.dutyDoctor,
-      time: "Today",
-      status: patient.criticalityScore >= 7 ? "Pending" : "Ordered",
-      instruction: "Collect sample and track report.",
-    },
-    {
-      id: `rad-${patient.id}`,
-      patientId: patient.id,
-      order: patient.ventilatorStatus.includes("ventilation") ? "Portable chest X-ray" : "Radiology review if condition changes",
-      department: "radiology",
-      departmentLabel: "Radiology",
-      orderedBy: patient.admittingDoctor,
-      time: "Today",
-      status: "Ordered",
-      instruction: "Coordinate with radiology team.",
-    },
-  ];
+  const taskOrders = icuTasks
+    .filter((task) => task.patientId === patient.id && task.status !== "Completed")
+    .map((task) => {
+      const department = instructionDepartment(`${task.taskType} ${task.title} ${task.remarks} ${task.createdBy}`);
+      return {
+        id: `task-${task.id}`,
+        patientId: patient.id,
+        order: task.title,
+        department: department.tab,
+        departmentLabel: department.label,
+        orderedBy: task.createdBy,
+        time: task.dueTime,
+        status: task.status,
+        instruction: `${task.taskType} | ${task.remarks}`,
+      };
+    });
 
-  return [...medicationOrders, ...doctorOrders, ...fallbackOrders].slice(0, 7);
+  return [...doctorOrders, ...taskOrders].slice(0, 8);
 }
 
 type DoctorOrdersPageProps = {
@@ -170,10 +153,11 @@ type DoctorOrdersPageProps = {
 export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, mode = "list", orderId, department }: DoctorOrdersPageProps = {}) {
   const assignedPatients = React.useMemo(() => assignedWardPatients(), []);
   const lockedPatientId = patientId;
-  const locked = lockedFromRoute && Boolean(lockedPatientId);
-  const initialPatientId = lockedPatientId && assignedPatients.some((patient) => patient.id === lockedPatientId)
+  const routePatientId = lockedPatientId && assignedPatients.some((patient) => patient.id === lockedPatientId)
     ? lockedPatientId
     : "";
+  const locked = lockedFromRoute && Boolean(routePatientId);
+  const initialPatientId = routePatientId || assignedPatients[0]?.id || "";
   const [selectedPatientId, setSelectedPatientId] = React.useState(initialPatientId);
   const [activeTab, setActiveTab] = React.useState<OrderTab["id"]>("blood");
   const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
@@ -279,6 +263,11 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
               {!selectedPatient ? (
                 <tr>
                   <td className="px-4 py-8 text-center text-sm font-semibold text-muted-foreground" colSpan={6}>Select patient to view orders.</td>
+                </tr>
+              ) : null}
+              {selectedPatient && !orders.length ? (
+                <tr>
+                  <td className="px-4 py-8 text-center text-sm font-semibold text-muted-foreground" colSpan={6}>No active doctor orders for this patient.</td>
                 </tr>
               ) : null}
             </tbody>

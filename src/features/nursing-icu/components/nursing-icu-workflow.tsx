@@ -4768,7 +4768,7 @@ export function MedicationTimelineWorkspace() {
           </span>
           <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
-        <div className="grid gap-3 border-t border-border p-4 md:grid-cols-2 xl:grid-cols-4 xl:items-end 2xl:grid-cols-[minmax(240px,1fr)_220px_180px_minmax(220px,1fr)_auto]">
+        <div className="grid gap-3 border-t border-border p-4 md:grid-cols-2 xl:grid-cols-4 xl:items-end">
           {isLockedPatientFlow ? null : (
             <label className="space-y-1 text-sm md:col-span-2 xl:col-span-1">
               <span className="font-medium text-foreground">Patient</span>
@@ -4800,14 +4800,6 @@ export function MedicationTimelineWorkspace() {
               </div>
             </label>
           </div>
-          <Button className="w-full min-w-0 justify-center px-3" variant="outline" onClick={() => {
-            setQuery("");
-            setUnitFilter(queryUnit || "All ICU units");
-            setPatientId(focusedPatient?.id ?? "");
-            setMedicationDate("2026-06-08");
-            setShift("All shifts");
-            setEmarQueue("Due Now");
-          }}><Filter className="h-4 w-4" />Reset</Button>
         </div>
       </details>
 
