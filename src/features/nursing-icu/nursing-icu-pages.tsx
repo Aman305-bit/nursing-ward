@@ -16049,7 +16049,7 @@ function IcuPatientTabLink({ active, children, href }: { active: boolean; childr
   return (
     <Link
       className={cn(
-        "inline-flex min-h-9 shrink-0 items-center justify-center rounded-xl px-3 text-sm font-semibold outline-none transition duration-150 focus-visible:ring-2 focus-visible:ring-sky-300",
+        "inline-flex min-h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-xl px-3 text-sm font-semibold outline-none transition duration-150 focus-visible:ring-2 focus-visible:ring-sky-300",
         active ? "bg-primary text-white shadow-[0_8px_18px_rgba(37,99,235,0.18)]" : "text-slate-600 hover:bg-white hover:text-sky-700",
       )}
       href={href}
@@ -16256,18 +16256,20 @@ function IcuPatientCommandProfile({
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-      <Tabs className="p-0" value={safeInitialTab}>
-        <TabsList className="flex h-auto w-full min-w-max gap-2 overflow-x-auto rounded-none border-b border-slate-100 bg-slate-50 px-4 py-3">
-          {visiblePatientTabs.map((tab) => (
-            <IcuPatientTabLink
-              active={safeInitialTab === tab.id}
-              href={icuPatientDetailHref(patient.id, tab.id, undefined, lockedTabQuery)}
-              key={tab.id}
-            >
-              {tab.label}
-            </IcuPatientTabLink>
-          ))}
-        </TabsList>
+      <Tabs className="min-w-0 p-0" value={safeInitialTab}>
+        <div className="max-w-full overflow-x-auto overscroll-x-contain border-b border-slate-100 bg-slate-50">
+          <TabsList className="flex h-auto w-max min-w-max gap-2 rounded-none border-0 bg-transparent px-4 py-3">
+            {visiblePatientTabs.map((tab) => (
+              <IcuPatientTabLink
+                active={safeInitialTab === tab.id}
+                href={icuPatientDetailHref(patient.id, tab.id, undefined, lockedTabQuery)}
+                key={tab.id}
+              >
+                {tab.label}
+              </IcuPatientTabLink>
+            ))}
+          </TabsList>
+        </div>
 
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="overview">
           {initialProfileAction === "verification" ? <IcuPatientProfileVerificationPanel allergyCount={allergyCount} latestVital={latestVital} patient={patient} /> : null}
@@ -16279,14 +16281,16 @@ function IcuPatientCommandProfile({
         </TabsContent>
 
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="monitoring">
-          <Tabs value={initialMonitoringTab}>
-            <TabsList className="flex h-auto w-full min-w-max gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-1.5">
-              <IcuPatientTabLink active={initialMonitoringTab === "monitoring-overview"} href={icuPatientDetailHref(patient.id, "monitoring", "monitoring-overview", lockedTabQuery)}>Monitoring Overview</IcuPatientTabLink>
-              <IcuPatientTabLink active={initialMonitoringTab === "24h-chart"} href={icuPatientDetailHref(patient.id, "monitoring", "24h-chart", lockedTabQuery)}>24h Chart</IcuPatientTabLink>
-              <IcuPatientTabLink active={initialMonitoringTab === "ventilation"} href={icuPatientDetailHref(patient.id, "monitoring", "ventilation", lockedTabQuery)}>Ventilation</IcuPatientTabLink>
-              <IcuPatientTabLink active={initialMonitoringTab === "intake-output"} href={icuPatientDetailHref(patient.id, "monitoring", "intake-output", lockedTabQuery)}>Intake Output</IcuPatientTabLink>
-              <IcuPatientTabLink active={initialMonitoringTab === "device-snapshot"} href={icuPatientDetailHref(patient.id, "monitoring", "device-snapshot", lockedTabQuery)}>Device Snapshot</IcuPatientTabLink>
-            </TabsList>
+          <Tabs className="min-w-0" value={initialMonitoringTab}>
+            <div className="max-w-full overflow-x-auto overscroll-x-contain rounded-xl">
+              <TabsList className="flex h-auto w-max min-w-max gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1.5">
+                <IcuPatientTabLink active={initialMonitoringTab === "monitoring-overview"} href={icuPatientDetailHref(patient.id, "monitoring", "monitoring-overview", lockedTabQuery)}>Monitoring Overview</IcuPatientTabLink>
+                <IcuPatientTabLink active={initialMonitoringTab === "24h-chart"} href={icuPatientDetailHref(patient.id, "monitoring", "24h-chart", lockedTabQuery)}>24h Chart</IcuPatientTabLink>
+                <IcuPatientTabLink active={initialMonitoringTab === "ventilation"} href={icuPatientDetailHref(patient.id, "monitoring", "ventilation", lockedTabQuery)}>Ventilation</IcuPatientTabLink>
+                <IcuPatientTabLink active={initialMonitoringTab === "intake-output"} href={icuPatientDetailHref(patient.id, "monitoring", "intake-output", lockedTabQuery)}>Intake Output</IcuPatientTabLink>
+                <IcuPatientTabLink active={initialMonitoringTab === "device-snapshot"} href={icuPatientDetailHref(patient.id, "monitoring", "device-snapshot", lockedTabQuery)}>Device Snapshot</IcuPatientTabLink>
+              </TabsList>
+            </div>
 
             <TabsContent className="mt-4 space-y-4" value="monitoring-overview">
               <IcuPatientMonitoringOverview
