@@ -16338,7 +16338,6 @@ function IcuPatientCommandProfile({
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="orders">
           <Tabs value={ordersSubTab} onValueChange={(value) => setOrdersSubTab(value as MedicationOrdersSubTab)}>
             <TabsList className="flex h-auto w-full min-w-max gap-2 overflow-x-auto rounded-xl border border-slate-200 bg-slate-50 p-1.5">
-              <TabsTrigger value="pending-work">Pending Actions</TabsTrigger>
               <TabsTrigger value="medicine-chart">Medicine Chart</TabsTrigger>
             </TabsList>
 
