@@ -7544,7 +7544,7 @@ function WardNurseAssignedPatientsCommand({ patients }: { patients: IcuPatient[]
             <thead className="border-b border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-950">
               <tr>
                 <th className="sticky left-0 z-30 w-[220px] bg-slate-50 px-5 py-3.5 text-left shadow-[8px_0_14px_-16px_rgba(15,23,42,0.55)]">Patient / Bed</th>
-                <th className="w-[170px] px-3 py-3.5 text-center">Profile Verification</th>
+                <th className="w-[190px] whitespace-nowrap px-3 py-3.5 text-center text-[11px] font-black">Profile Verification</th>
                 <th className="w-[190px] px-3 py-3.5 text-center">Assessment / Vitals</th>
                 <th className="w-[160px] px-3 py-3.5 text-center">Medication</th>
                 <th className="w-[205px] px-3 py-3.5 text-center">Doctor Orders</th>
@@ -21123,20 +21123,14 @@ function VitalsCharting() {
 }
 
 function VitalEntriesWorkspace() {
+  const [dateTimeFilter, setDateTimeFilter] = React.useState<DateTimeFilterState>(defaultDateTimeFilter);
+  const filteredVitals = React.useMemo(() => applyDateTimeFilter(icuVitals, dateTimeFilter), [dateTimeFilter]);
+
   return (
-    <Card className="min-w-0 max-w-full overflow-hidden">
-      <CardHeader>
-        <div>
-          <CardTitle>Vital Entries</CardTitle>
-          <CardDescription>Update nurse-entered ICU vital rows.</CardDescription>
-        </div>
-        <StatusPill tone="info">{icuVitals.length} records</StatusPill>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <DateTimeFilterPanel compact embedded hideHeader />
-        <GenericTable title="Vital Entries" rows={icuVitals} actions={["Update"]} />
-      </CardContent>
-    </Card>
+    <div className="space-y-3">
+      <DateTimeFilterPanel compact embedded hideHeader value={dateTimeFilter} onChange={setDateTimeFilter} resultCount={filteredVitals.length} />
+      <GenericTable title="Vital Entries" rows={filteredVitals} actions={["Update"]} hideHeader />
+    </div>
   );
 }
 
@@ -21361,10 +21355,10 @@ function NurseVitalsEntryForm() {
             <NurseEntrySelect label="GCS score" value={gcsScore} onChange={setGcsScore} options={["15/Awake and alert", "14/Confused", "13/Drowsy", "12/Responds to voice", "9-11/Serious", "3-8/Critical"]} />
             <VitalNumberInput label="Pain score" value={painScore} onChange={setPainScore} suffix="/10" />
             <VitalNumberInput label="Urine output" value={urineOutput} onChange={setUrineOutput} suffix="ml/hr" />
-            <div className="min-h-[96px] rounded-md border border-border bg-surface-muted p-3">
+            <div className="flex h-[104px] flex-col justify-between rounded-md border border-border bg-surface-muted p-3">
               <div className="text-[11px] font-medium uppercase text-muted-foreground">Pulse deficit</div>
-              <div className="mt-1 text-lg font-semibold text-foreground">{pulseDeficit} bpm</div>
-              <span className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold ${pulseDeficit > 0 ? riskBadgeClass("Warning") : riskBadgeClass("Normal")}`}>
+              <div className="text-lg font-semibold text-foreground">{pulseDeficit} bpm</div>
+              <span className={`inline-flex w-fit rounded-full border px-2 py-0.5 text-[11px] font-semibold ${pulseDeficit > 0 ? riskBadgeClass("Warning") : riskBadgeClass("Normal")}`}>
                 {pulseDeficit > 0 ? "Check rhythm" : "Normal"}
               </span>
             </div>
@@ -21459,11 +21453,12 @@ function BloodPressureInput({ sys, dia, setSys, setDia }: { sys: string; dia: st
 function ObservationStatusPreview({ riskLevel, ready = true }: { riskLevel: ObservationRisk; ready?: boolean }) {
   if (!ready) {
     return (
-      <div className="min-h-[96px] rounded-md border border-border bg-surface-muted p-3">
+      <div className="flex h-[104px] flex-col justify-between rounded-md border border-border bg-surface-muted p-3">
         <div className="text-[11px] font-medium uppercase text-muted-foreground">System status</div>
-        <div className="mt-2 inline-flex rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
+        <div className="inline-flex w-fit rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
           Pending entry
         </div>
+        <span aria-hidden="true" className="h-[22px]" />
       </div>
     );
   }
@@ -21477,11 +21472,12 @@ function ObservationStatusPreview({ riskLevel, ready = true }: { riskLevel: Obse
         : ["Safe", "Routine"];
 
   return (
-    <div className="min-h-[96px] rounded-md border border-border bg-surface-muted p-3">
+    <div className="flex h-[104px] flex-col justify-between rounded-md border border-border bg-surface-muted p-3">
       <div className="text-[11px] font-medium uppercase text-muted-foreground">System status</div>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         {preview.map((item) => <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${riskBadgeClass(riskLevel)}`} key={item}>{item}</span>)}
       </div>
+      <span aria-hidden="true" className="h-[22px]" />
     </div>
   );
 }
@@ -28735,17 +28731,19 @@ function SmartWorkflowField({ label, value, readOnly, wide }: { label: string; v
   );
 }
 
-function GenericTable({ title, rows, actions = ["View", "Update"] }: { title: string; rows: Record<string, unknown>[]; actions?: Array<"View" | "Update"> }) {
+function GenericTable({ title, rows, actions = ["View", "Update"], hideHeader = false }: { title: string; rows: Record<string, unknown>[]; actions?: Array<"View" | "Update">; hideHeader?: boolean }) {
   const [activeRow, setActiveRow] = React.useState<{ mode: "View" | "Update"; row: Record<string, unknown> } | null>(null);
   const pagination = useIcuCommandPagination(rows);
   const columns = Object.keys(rows[0] ?? {}).filter((key) => key !== "id");
   return (
     <>
       <Card className="min-w-0 max-w-full overflow-hidden">
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{rows.length} workflow records.</CardDescription>
-        </CardHeader>
+        {!hideHeader ? (
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{rows.length} workflow records.</CardDescription>
+          </CardHeader>
+        ) : null}
         <CardContent className="min-w-0">
           <div className="max-w-full overflow-x-auto rounded-lg border border-border">
             <table className="w-full min-w-[920px] border-collapse text-sm">
