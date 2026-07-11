@@ -28807,27 +28807,52 @@ function NursingNotes() {
         value={patientId}
       />
       {selectedPatient ? (
-        <NotesPage
-          compactCategoryView
-          forceCategoryView
-          hidePatientBanner
-          lockedCategory="Nurse Notes"
-          patientContext={{
-            patientId: selectedPatient.id,
-            name: selectedPatient.patientName,
-            mrn: selectedPatient.mrn,
-            ageSex: selectedPatient.ageGender,
-            location: `${selectedPatient.unit} | ${selectedPatient.bedNo}`,
-            encounterId: selectedPatient.mrn,
-            status: selectedPatient.currentStatus,
-          }}
-        />
+        <>
+          <WardNurseNotesPatientHeader patient={selectedPatient} />
+          <NotesPage
+            compactCategoryView
+            forceCategoryView
+            hidePatientBanner
+            lockedCategory="Nurse Notes"
+            patientContext={{
+              patientId: selectedPatient.id,
+              name: selectedPatient.patientName,
+              mrn: selectedPatient.mrn,
+              ageSex: selectedPatient.ageGender,
+              location: `${selectedPatient.unit} | ${selectedPatient.bedNo}`,
+              encounterId: selectedPatient.mrn,
+              status: selectedPatient.currentStatus,
+            }}
+          />
+        </>
       ) : (
         <WardNurseNoPatientSelected
           title="No patient selected"
           description="Please select a patient first. Only nursing notes for the selected patient will be shown here."
         />
       )}
+    </div>
+  );
+}
+
+function WardNurseNotesPatientHeader({ patient }: { patient: IcuPatient }) {
+  return (
+    <div
+      className="max-w-full overflow-x-auto rounded-xl border border-[#7367f0]/40 px-4 py-3 text-white shadow-[0_8px_20px_rgba(115,103,240,0.24)]"
+      style={{ background: "linear-gradient(90deg,#7367f0,#5b8def)" }}
+    >
+      <div className="flex min-w-max items-center gap-6 text-sm font-semibold text-white/90">
+        <span className="text-base font-bold text-white">{patient.patientName}</span>
+        <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-bold uppercase text-red-700">
+          {patient.criticalityScore >= 8 ? "Urgent" : patient.currentStatus}
+        </span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">MR: {patient.mrn}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Age/Sex: {patient.ageGender}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Bed: {patient.bedNo}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Unit: {patient.unit}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Doctor: {patient.admittingDoctor}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Nurse: {patient.assignedWardNurse}</span>
+      </div>
     </div>
   );
 }
