@@ -17976,8 +17976,7 @@ type IcuCollaborateLogRow = {
 };
 
 function IcuPatientCollaborateWorkspace({ patient }: { patient: IcuPatient }) {
-  const patientSelection = useWardNursePatientContext(patient);
-  const activePatient = patientSelection.patient;
+  const activePatient = patient;
   const results = React.useMemo(() => buildIcuPatientResultRows(activePatient), [activePatient]);
   const currentIssue = React.useMemo(() => buildIcuCollaborateIssue(activePatient, results), [activePatient, results]);
   const actionRows = React.useMemo(
@@ -17997,15 +17996,6 @@ function IcuPatientCollaborateWorkspace({ patient }: { patient: IcuPatient }) {
 
   return (
     <Tabs defaultValue="notify" className="space-y-4">
-      {patientSelection.selectable ? (
-        <WardNursePatientContextSelector
-          label="Patient"
-          onChange={patientSelection.setPatientId}
-          patients={patientSelection.assignedPatients}
-          value={activePatient.id}
-        />
-      ) : null}
-
       <TabsList className="grid w-full max-w-md grid-cols-2 rounded-md bg-slate-100 p-1">
         <TabsTrigger value="notify">Notify Unit Nurse</TabsTrigger>
         <TabsTrigger value="history">Communication History</TabsTrigger>
