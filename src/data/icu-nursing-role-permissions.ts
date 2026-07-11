@@ -101,7 +101,7 @@ export const nursingRolePermissions: Record<NursingRoleKey, NursingRolePermissio
     ],
     patientTabs: ["overview", "monitoring", "orders", "events", "shift-summary", "collaborate"],
     navigation: [
-      navChild("ward-nurse-assigned", "My Assigned Patients", "/icu-command-center/clinical-workspace/patient-overview"),
+      navChild("ward-nurse-assigned", "Assigned Patient", "/icu-command-center/clinical-workspace/patient-overview"),
       navChild("ward-nurse-documentation", "Bedside Documentation", "/icu-command-center/nursing/nurse-entry", [
         navChild("ward-nurse-entry", "Nurse Entry", "/icu-command-center/nursing/nurse-entry"),
         navChild("ward-nurse-ews", "Early Warning Score", "/icu-command-center/nursing/early-warning-score"),

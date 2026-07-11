@@ -34,6 +34,7 @@
     const s = String(v).trim();
     if (s === "") return null;
     const n = parseFloat(s);
+    if (n < 0) return null;
     return Number.isNaN(n) ? null : n;
   }
 

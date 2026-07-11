@@ -25,19 +25,27 @@ type OrderTab = {
   label: string;
   description: string;
   icon: typeof ClipboardCheck;
-  component: ReactNode;
+  render: (selection: SelectedWardOrderContext) => ReactNode;
 };
 
+type SelectedWardOrderContext = {
+  order: string;
+  instruction: string;
+  status: string;
+  time: string;
+  departmentLabel: string;
+} | null;
+
 const tabs: OrderTab[] = [
-  { id: "blood", label: "Blood", description: "Blood component request details for blood bank approval.", icon: Droplet, component: <BloodRequestTab /> },
-  { id: "drugs", label: "Drug", description: "Medication orders, dosing, route, frequency, and review context.", icon: Pill, component: <DrugsTab /> },
-  { id: "pathology", label: "Pathology", description: "Pathology test order, summary, and result review workflow.", icon: Microscope, component: <PathologyTab /> },
-  { id: "lab", label: "Laboratory", description: "Laboratory investigations and sample request workflow.", icon: FlaskConical, component: <LaboratoryTab /> },
-  { id: "radiology", label: "Radiology", description: "Imaging orders for radiology scheduling and reporting.", icon: FileSearch, component: <RadiologyTab /> },
-  { id: "procedures", label: "Procedure", description: "Procedure orders, clinical notes, and operational instructions.", icon: Stethoscope, component: <ProceduresTab /> },
-  { id: "referral", label: "Referral", description: "Specialist referral and consultation request workflow.", icon: UserPlus, component: <ReferConsultationTab /> },
-  { id: "ordersets", label: "Master Order Sets", description: "Reusable clinical order bundles for common workflows.", icon: Layers, component: <OrderSetsTab /> },
-  { id: "ldt", label: "LDT", description: "Line, drain, and tube order request workflow.", icon: ClipboardCheck, component: <LdtTab /> },
+  { id: "blood", label: "Blood", description: "Blood component request details for blood bank approval.", icon: Droplet, render: () => <BloodRequestTab /> },
+  { id: "drugs", label: "Drug", description: "Medication orders, dosing, route, frequency, and review context.", icon: Pill, render: (selection) => <DrugsTab prescribedOrder={selection?.order} prescribedInstruction={selection?.instruction} /> },
+  { id: "pathology", label: "Pathology", description: "Pathology test order, summary, and result review workflow.", icon: Microscope, render: () => <PathologyTab /> },
+  { id: "lab", label: "Laboratory", description: "Laboratory investigations and sample request workflow.", icon: FlaskConical, render: (selection) => <LaboratoryTab prescribedOrder={selection?.order} prescribedInstruction={selection?.instruction} /> },
+  { id: "radiology", label: "Radiology", description: "Imaging orders for radiology scheduling and reporting.", icon: FileSearch, render: (selection) => <RadiologyTab prescribedOrder={selection?.order} prescribedInstruction={selection?.instruction} /> },
+  { id: "procedures", label: "Procedure", description: "Procedure orders, clinical notes, and operational instructions.", icon: Stethoscope, render: () => <ProceduresTab /> },
+  { id: "referral", label: "Referral", description: "Specialist referral and consultation request workflow.", icon: UserPlus, render: () => <ReferConsultationTab /> },
+  { id: "ordersets", label: "Master Order Sets", description: "Reusable clinical order bundles for common workflows.", icon: Layers, render: () => <OrderSetsTab /> },
+  { id: "ldt", label: "LDT", description: "Line, drain, and tube order request workflow.", icon: ClipboardCheck, render: () => <LdtTab /> },
 ];
 
 type WardNurseOrder = {
@@ -323,7 +331,8 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
               </div>
               {tabs.map((tab) => (
                 <TabsContent key={tab.id} value={tab.id} className="mt-2 sm:mt-3">
-                  {tab.component}
+                  {selectedOrder && selectedOrder.department === tab.id ? <SelectedOrderBanner order={selectedOrder} /> : null}
+                  {tab.render(selectedOrder && selectedOrder.department === tab.id ? selectedOrder : null)}
                 </TabsContent>
               ))}
             </div>
@@ -368,13 +377,32 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
                       {selectedOrder?.status}
                     </span>
                   </div>
-                  {selectedOrderTab.component}
+                  <SelectedOrderBanner order={selectedOrder} />
+                  {selectedOrderTab.render(selectedOrder)}
                 </div>
               ) : null}
             </div>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
+    </div>
+  );
+}
+
+function SelectedOrderBanner({ order }: { order: WardNurseOrder | null }) {
+  if (!order) return null;
+  return (
+    <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="font-bold text-foreground">Selected prescribed order</p>
+          <p className="mt-1 truncate font-semibold text-primary">{order.order}</p>
+          <p className="mt-1 truncate text-xs font-medium text-muted-foreground">{order.instruction}</p>
+        </div>
+        <span className="w-fit rounded-full border border-border bg-background px-3 py-1 text-xs font-bold text-foreground">
+          {order.departmentLabel} | {order.status}
+        </span>
+      </div>
     </div>
   );
 }

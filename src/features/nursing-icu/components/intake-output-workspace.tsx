@@ -532,9 +532,9 @@ function IoCollapsiblePanel({
         onClick={() => changeOpen(!isOpen)}
         type="button"
       >
-        <span className="min-w-0">
-          <span className="block text-sm font-bold text-slate-950">{title}</span>
-          <span className="mt-0.5 block truncate text-xs text-slate-500">{summary}</span>
+        <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="text-sm font-bold text-slate-950">{title}</span>
+          <span className="truncate text-xs font-medium text-slate-500">{summary ? `| ${summary}` : ""}</span>
         </span>
         <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm">
           <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen ? "rotate-180" : "")} />
@@ -641,10 +641,6 @@ function FluidBalanceGraph({ series }: { series: GraphPoint[] }) {
           <div>
             <CardTitle>Fluid Balance Graph</CardTitle>
             <CardDescription>Blue intake is plotted above the baseline and green output below it.</CardDescription>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge tone="info">Intake</Badge>
-            <Badge tone="success">Output</Badge>
           </div>
         </div>
       </CardHeader>

@@ -26,6 +26,18 @@ function normalizeSelectionLabel(value: string) {
   return value.toLowerCase().replace(/[-_]/g, " ").trim();
 }
 
+function prescribedOrderMatches(value: string, labels: string[]) {
+  const normalizedValue = normalizeSelectionLabel(value);
+  const tokens = normalizedValue.split(/\s+/).filter((token) => token.length > 2);
+  return labels.some((label) => {
+    const normalizedLabel = normalizeSelectionLabel(label);
+    if (!normalizedLabel) return false;
+    return normalizedValue.includes(normalizedLabel)
+      || normalizedLabel.split(/\s+/).some((token) => token.length > 2 && normalizedValue.includes(token))
+      || tokens.some((token) => normalizedLabel.includes(token));
+  });
+}
+
 function buildLaboratorySnapshotRows(testIds: string[], groupIds: string[], fallbackRows: PathologySummaryRow[]) {
   const rows: PathologySummaryRow[] = [];
 
@@ -102,7 +114,7 @@ function buildSavedLaboratoryBlocks(testIds: string[], groupIds: string[]) {
   return buildLaboratorySnapshotBlocks(testIds, groupIds, initialResultBlocks);
 }
 
-export function LaboratoryTab() {
+export function LaboratoryTab({ prescribedOrder, prescribedInstruction }: { prescribedOrder?: string; prescribedInstruction?: string } = {}) {
   const [activeTab, setActiveTab] = React.useState<MainTab>("test-order");
   const [search, setSearch] = React.useState("");
   const [departmentFilter, setDepartmentFilter] = React.useState("All");
@@ -131,6 +143,24 @@ export function LaboratoryTab() {
   const [selectedDiagnosisLabel, setSelectedDiagnosisLabel] = React.useState("");
   const [billingNote, setBillingNote] = React.useState("Orders are ready.");
   const [deleteTarget, setDeleteTarget] = React.useState<PathologySummaryRow | null>(null);
+  const appliedPrescriptionRef = React.useRef("");
+
+  React.useEffect(() => {
+    const prescription = `${prescribedOrder ?? ""} ${prescribedInstruction ?? ""}`.trim();
+    if (!prescription || appliedPrescriptionRef.current === prescription) return;
+    appliedPrescriptionRef.current = prescription;
+    const matchedTestIds = testList
+      .filter((test) => prescribedOrderMatches(prescription, [test.name, test.description, test.code ?? "", test.department]))
+      .map((test) => test.id);
+    const matchedGroupIds = groupedTests
+      .filter((group) => prescribedOrderMatches(prescription, [group.name, group.department]))
+      .map((group) => group.id);
+
+    setSearch(prescribedOrder ?? "");
+    setSelectedTestIds((current) => Array.from(new Set([...matchedTestIds, ...current])));
+    setSelectedGroupIds((current) => Array.from(new Set([...matchedGroupIds, ...current])));
+    if (matchedTestIds.length || matchedGroupIds.length) setActiveTab("test-order");
+  }, [prescribedInstruction, prescribedOrder]);
 
   const selectedCount = selectedTestIds.length + selectedGroupIds.length;
 

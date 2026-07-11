@@ -4480,16 +4480,17 @@ export function MedicationTimelineWorkspace() {
     doseId: string,
     nextStatus: WorkflowMedicationStatus,
     note: string,
-    details?: { actualTime?: string; administeredBy?: string },
+    details?: { actualTime?: string; administeredBy?: string; verifier?: string },
   ) => {
     const targetDose = doses.find((dose) => dose.id === doseId);
     if (!targetDose) return;
-    if (nextStatus === "Administered" && targetDose.pharmacyStatus !== "Available") {
+    const isAdministrationStatus = nextStatus === "Administered" || nextStatus === "Running";
+    if (isAdministrationStatus && targetDose.pharmacyStatus !== "Available") {
       toast.error("Pharmacy clearance pending. Mark medicine received first.");
       setSelectedDoseId(doseId);
       return;
     }
-    if (nextStatus === "Administered" && targetDose.doubleVerification === "Pending") {
+    if (isAdministrationStatus && targetDose.doubleVerification === "Pending" && !details?.verifier?.trim()) {
       toast.error("High-risk medicine needs double verification before administration.");
       setSelectedDoseId(doseId);
       return;
@@ -4500,13 +4501,20 @@ export function MedicationTimelineWorkspace() {
       const prnReassessment = nextStatus === "Administered" && dose.orderType === "PRN"
         ? ["PRN reassessment due in 30 minutes"]
         : [];
+      const verificationCompleted = isAdministrationStatus && dose.doubleVerification === "Pending" && Boolean(details?.verifier?.trim());
       return {
         ...dose,
         status: nextStatus,
         actualTime: nextStatus === "Administered" || nextStatus === "Running" ? details?.actualTime || "Now" : dose.actualTime,
         administeredBy: nextStatus === "Administered" || nextStatus === "Running" ? details?.administeredBy || "Ward Nurse Current" : dose.administeredBy,
+        doubleVerification: verificationCompleted ? "Verified" : dose.doubleVerification,
         reason: ["Held", "Skipped", "Missed", "Refused"].includes(nextStatus) ? note : dose.reason,
-        auditTrail: [...prnReassessment, `Now: ${nextStatus} - ${note}`, ...dose.auditTrail],
+        auditTrail: [
+          ...prnReassessment,
+          ...(verificationCompleted ? [`Now: Double verification completed by ${details?.verifier} during administration`] : []),
+          `Now: ${nextStatus} - ${note}`,
+          ...dose.auditTrail,
+        ],
       };
     }));
     setSelectedDoseId(doseId);
@@ -4873,7 +4881,7 @@ export function MedicationTimelineWorkspace() {
               pendingDoseAction.doseId,
               pendingDoseAction.action,
               payload.note,
-              { actualTime: payload.actualTime, administeredBy: payload.administeredBy },
+              { actualTime: payload.actualTime, administeredBy: payload.administeredBy, verifier: payload.verifier },
             );
           }
           setPendingDoseAction(null);
@@ -6743,7 +6751,7 @@ function MedicationActionDialog({
   const checkLabels = medicationActionChecks(action, dose);
   const allChecksComplete = checkLabels.every((label) => checks[label]);
   const pharmacyBlocked = isAdministration && dose.pharmacyStatus !== "Available";
-  const verificationBlocked = isAdministration && dose.doubleVerification === "Pending";
+  const doubleVerificationRequired = isAdministration && dose.doubleVerification === "Pending";
   const inactiveOrder = dose.orderStatus !== "Active";
   const prnAssessmentMissing = action === "Administered" && dose.orderType === "PRN" && !clinicalDetail.trim();
   const infusionDetailMissing = action === "Running" && !clinicalDetail.trim();
@@ -6751,10 +6759,9 @@ function MedicationActionDialog({
   const otherReasonMissing = reason === "Other" && !clinicalDetail.trim();
   const reviewTimeMissing = (action === "Held" || action === "Paused") && !reviewTime;
   const actualTimeMissing = !isVerification && !actualTime;
-  const verifierMissing = isVerification && !verifier.trim();
+  const verifierMissing = (isVerification || doubleVerificationRequired) && !verifier.trim();
   const canConfirm = allChecksComplete
     && !pharmacyBlocked
-    && !verificationBlocked
     && !inactiveOrder
     && !prnAssessmentMissing
     && !infusionDetailMissing
@@ -6771,6 +6778,7 @@ function MedicationActionDialog({
     }
     const noteParts = [
       isVerification ? `Independent verification by ${verifier}` : medicationActionDefaultNote(action),
+      doubleVerificationRequired ? `Independent verification by ${verifier}` : "",
       reason ? `Reason: ${reason}` : "",
       clinicalDetail ? `${dose.orderType === "PRN" ? "Assessment" : action === "Running" ? "Infusion setup" : "Clinical detail"}: ${clinicalDetail}` : "",
       reviewTime ? `Review at ${reviewTime}` : "",
@@ -6810,11 +6818,11 @@ function MedicationActionDialog({
               <MedicationContextItem label="Verification" value={dose.doubleVerification} />
             </div>
 
-            {pharmacyBlocked || verificationBlocked || inactiveOrder ? (
+            {pharmacyBlocked || doubleVerificationRequired || inactiveOrder ? (
               <div className="rounded-md border border-danger/30 bg-danger/5 p-3 text-sm text-danger">
                 {inactiveOrder ? "Doctor order is not active. " : ""}
                 {pharmacyBlocked ? "Medicine must be received from pharmacy. " : ""}
-                {verificationBlocked ? "Complete independent double verification before administration." : ""}
+                {doubleVerificationRequired ? "Select independent verifier before administration confirmation." : ""}
               </div>
             ) : null}
 
@@ -6846,6 +6854,10 @@ function MedicationActionDialog({
                 </label>
               </div>
             )}
+
+            {!isVerification && doubleVerificationRequired ? (
+              <NativeSelect label="Independent verifier" value={verifier} onChange={setVerifier} options={Array.from(new Set([...allNurses, "Head Nurse Sana"]))} />
+            ) : null}
 
             {requiresReason ? (
               <NativeSelect label={`${medicationActionLabel(action)} reason`} value={reason} onChange={setReason} options={["Select reason", ...reasonOptions]} />

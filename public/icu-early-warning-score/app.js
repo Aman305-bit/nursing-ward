@@ -10,6 +10,17 @@
   const { SHARED_PARAMS, CORE_PARAM_KEYS, INSTRUMENTS, num } = REG;
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  function nonNegativeValue(input) {
+    if (!input || input.type !== "number") return input ? input.value : "";
+    const raw = String(input.value || "").trim();
+    if (!raw) return "";
+    const value = Number(raw);
+    if (!Number.isNaN(value) && value < 0) {
+      input.value = "0";
+      return "0";
+    }
+    return input.value;
+  }
 
   // ----------------------------------------------------------------
   // Central state
@@ -52,7 +63,7 @@
           <span>${esc(p.label)}</span>
           <span class="param-field-used-by">${p.usedBy.join(" · ")}</span>
         </label>
-        <input type="${p.type}" id="param-${p.key}" step="${p.step || 1}" inputmode="decimal"
+        <input type="${p.type}" id="param-${p.key}" step="${p.step || 1}" ${p.type === "number" ? "min=\"0\"" : ""} inputmode="decimal"
                placeholder="" value="${esc(state[p.key] ?? "")}">
         <span class="param-field-unit">${esc(p.unit || "")}</span>
       </div>
@@ -61,7 +72,7 @@
     SHARED_PARAMS.forEach(p => {
       const input = $("param-" + p.key);
       input.addEventListener("input", () => {
-        state[p.key] = input.value;
+        state[p.key] = nonNegativeValue(input);
         updateParamCompleteness();
         notifyChange();
       });
@@ -447,8 +458,9 @@
   }
   function bindNumber(elId, stateKey) {
     const el = $(elId); if (!el) return;
+    el.setAttribute("min", "0");
     el.value = state[stateKey] ?? "";
-    el.addEventListener("input", () => { state[stateKey] = el.value; notifyChange(); });
+    el.addEventListener("input", () => { state[stateKey] = nonNegativeValue(el); notifyChange(); });
   }
   function bindCheckbox(elId, stateKey) {
     const el = $(elId); if (!el) return;

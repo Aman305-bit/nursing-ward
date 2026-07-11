@@ -1876,21 +1876,39 @@ function IcuDailyNursingRecordTable({ vitals, tasks, instructions }: { vitals: t
   );
 }
 
-function NurseEntryReviewTabs({ activePage }: { activePage: NursingIcuPageId }) {
+type NurseEntryWorkspaceTab = "vitals" | "vital-entries" | "nurse-review";
+
+function NurseEntryReviewTabs({ activePage }: { activePage: NurseEntryWorkspaceTab }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const inIcuCommandCenter = pathname.startsWith("/icu-command-center");
+  const buildRoute = (route: string, entryTab?: NurseEntryWorkspaceTab) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (entryTab === "vital-entries") {
+      params.set("entryTab", "vital-entries");
+    } else {
+      params.delete("entryTab");
+    }
+    const query = params.toString();
+    return query ? `${route}?${query}` : route;
+  };
   const tabs = [
     {
       id: "vitals",
       label: "Nurse Entry",
-      route: inIcuCommandCenter ? "/icu-command-center/nursing/nurse-entry" : "/nursing-icu/vitals",
+      route: buildRoute(inIcuCommandCenter ? "/icu-command-center/nursing/nurse-entry" : "/nursing-icu/vitals"),
+    },
+    {
+      id: "vital-entries",
+      label: "Vital Entries",
+      route: buildRoute(inIcuCommandCenter ? "/icu-command-center/nursing/nurse-entry" : "/nursing-icu/vitals", "vital-entries"),
     },
     {
       id: "nurse-review",
       label: "Nurse Review",
-      route: inIcuCommandCenter ? "/icu-command-center/nursing/nurse-review" : "/nursing-icu/nurse-review",
+      route: buildRoute(inIcuCommandCenter ? "/icu-command-center/nursing/nurse-review" : "/nursing-icu/nurse-review"),
     },
-  ];
+  ] satisfies Array<{ id: NurseEntryWorkspaceTab; label: string; route: string }>;
 
   return (
     <div className="flex w-full min-w-0 overflow-x-auto rounded-md border border-border bg-surface p-1 sm:w-max">
@@ -7523,7 +7541,7 @@ function WardNurseAssignedPatientsCommand({ patients }: { patients: IcuPatient[]
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[1320px] border-collapse bg-white text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wide text-slate-950">
+            <thead className="border-b border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-950">
               <tr>
                 <th className="sticky left-0 z-30 w-[220px] bg-slate-50 px-5 py-3.5 text-left shadow-[8px_0_14px_-16px_rgba(15,23,42,0.55)]">Patient / Bed</th>
                 <th className="w-[170px] px-3 py-3.5 text-center">Profile Verification</th>
@@ -7860,20 +7878,12 @@ function WardNursePatientVerificationDialog({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[1px]" />
         <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[94dvh] w-[min(1180px,calc(100vw-24px))] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-2xl outline-none">
-          <div className="flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4">
-            <div>
-              <Dialog.Title className="text-xl font-black tracking-tight text-slate-950">Patient Verification</Dialog.Title>
-              <Dialog.Description className="mt-1 text-sm font-semibold text-slate-500">Verify patient details before care or medication.</Dialog.Description>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-800 sm:flex">
-                <ShieldAlert className="size-4" aria-hidden="true" />
-                Pending verification
-              </div>
-              <Dialog.Close asChild>
-                <Button size="icon" variant="outline"><X className="size-4" aria-hidden="true" /></Button>
-              </Dialog.Close>
-            </div>
+          <div className="flex items-center justify-end border-b border-slate-200 bg-white px-5 py-3">
+            <Dialog.Title className="sr-only">Patient verification</Dialog.Title>
+            <Dialog.Description className="sr-only">Review patient details before care or medication.</Dialog.Description>
+            <Dialog.Close asChild>
+              <Button size="icon" variant="outline"><X className="size-4" aria-hidden="true" /></Button>
+            </Dialog.Close>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 p-4">
@@ -7903,14 +7913,13 @@ function WardNursePatientVerificationDialog({
                 const Icon = section.icon;
                 return (
                   <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" key={section.title}>
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-full", wardNurseVerificationIconClass(section.tone))}>
                           <Icon className="size-5" aria-hidden="true" />
                         </span>
                         <h3 className="truncate text-base font-black text-slate-950">{section.title}</h3>
                       </div>
-                      <span className="shrink-0 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-black text-amber-800">Check</span>
                     </div>
                     <div className="mt-4 space-y-2.5">
                       {section.rows.map(([label, value]) => (
@@ -7938,7 +7947,7 @@ function WardNursePatientVerificationDialog({
             <Input className="h-11" placeholder="Notes if any..." />
             <Button className="h-11 font-black" onClick={() => onVerify(patient.id)}>
               <CheckCircle2 className="mr-2 size-4" aria-hidden="true" />
-              Verify
+              Continue to assessment
             </Button>
           </div>
         </Dialog.Content>
@@ -16249,11 +16258,11 @@ function IcuPatientCommandProfile({
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="overview">
           {initialProfileAction === "verification" ? <IcuPatientProfileVerificationPanel allergyCount={allergyCount} latestVital={latestVital} patient={patient} /> : null}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <IcuPatientDetailMetric icon={ShieldAlert} label="Risk score" value={patient.criticalityScore} detail={patient.currentStatus} tone={riskTone} />
-            <IcuPatientDetailMetric icon={HeartPulse} label="Latest vitals" value={latestVital ? `SpO2 ${latestVital.spo2}%` : "-"} detail={latestVital ? `${latestVital.bp} | P ${latestVital.pulse}` : "Chart pending"} tone={vitalTone} />
-            <IcuPatientDetailMetric icon={Activity} label="Ventilation" value={patient.ventilatorStatus} detail={patient.lastVitalsTime} tone={patient.ventilatorStatus === "Room air" ? "success" : "purple"} />
-            <IcuPatientDetailMetric icon={Droplets} label="Fluid balance" value={`${balance} ml`} detail={`${totalIntake} in / ${totalOutput} out`} tone={balanceTone} />
-            <IcuPatientDetailMetric icon={AlertTriangle} label="Open alerts" value={openAlerts.length} detail={`${dueMeds.length} meds due, ${activeTasks.length} tasks pending`} tone={openAlerts.length ? "warning" : "success"} />
+            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "overview", undefined, lockedTabQuery)} icon={ShieldAlert} label="Risk score" value={patient.criticalityScore} detail={patient.currentStatus} tone={riskTone} />
+            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "monitoring", "24h-chart", lockedTabQuery)} icon={HeartPulse} label="Latest vitals" value={latestVital ? `SpO2 ${latestVital.spo2}%` : "-"} detail={latestVital ? `${latestVital.bp} | P ${latestVital.pulse}` : "Chart pending"} tone={vitalTone} />
+            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "monitoring", "ventilation", lockedTabQuery)} icon={Activity} label="Ventilation" value={patient.ventilatorStatus} detail={patient.lastVitalsTime} tone={patient.ventilatorStatus === "Room air" ? "success" : "purple"} />
+            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "monitoring", "intake-output", lockedTabQuery)} icon={Droplets} label="Fluid balance" value={`${balance} ml`} detail={`${totalIntake} in / ${totalOutput} out`} tone={balanceTone} />
+            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "events", undefined, lockedTabQuery)} icon={AlertTriangle} label="Open alerts" value={openAlerts.length} detail={`${dueMeds.length} meds due, ${activeTasks.length} tasks pending`} tone={openAlerts.length ? "warning" : "success"} />
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
             <IcuPatientTeamPanel patient={patient} />
@@ -16982,9 +16991,14 @@ function clampIcuNumber(value: number, min: number, max: number) {
   return Math.round(Math.min(max, Math.max(min, value)));
 }
 
-function IcuPatientDetailMetric({ icon: Icon, label, value, detail, tone }: { icon: typeof Activity; label: string; value: React.ReactNode; detail: string; tone: DashboardCellTone }) {
-  return (
-    <div className={cn("min-h-[132px] rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_14px_32px_rgba(15,23,42,0.05)] transition duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.07)]", patientDetailAccentClass(tone))}>
+function IcuPatientDetailMetric({ href, icon: Icon, label, value, detail, tone }: { href?: string; icon: typeof Activity; label: string; value: React.ReactNode; detail: string; tone: DashboardCellTone }) {
+  const className = cn(
+    "min-h-[132px] rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_14px_32px_rgba(15,23,42,0.05)] transition duration-150 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.07)]",
+    href ? "block cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-200" : "",
+    patientDetailAccentClass(tone),
+  );
+  const content = (
+    <>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{label}</p>
@@ -16995,8 +17009,10 @@ function IcuPatientDetailMetric({ icon: Icon, label, value, detail, tone }: { ic
         </span>
       </div>
       <p className="mt-3 truncate text-xs font-medium text-slate-500">{detail}</p>
-    </div>
+    </>
   );
+
+  return href ? <Link className={className} href={href}>{content}</Link> : <div className={className}>{content}</div>;
 }
 
 function patientDetailAccentClass(tone: DashboardCellTone) {
@@ -17017,38 +17033,47 @@ function patientDetailIconClass(tone: DashboardCellTone) {
   return "border-blue-100 bg-blue-50 text-blue-600";
 }
 
-function IcuPatientDetailPanel({ title, children }: { title: string; children: React.ReactNode }) {
+function IcuPatientDetailPanel({ title, children, prominent = false }: { title: string; children: React.ReactNode; prominent?: boolean }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_14px_32px_rgba(15,23,42,0.05)]">
-      <p className="text-sm font-semibold text-slate-950">{title}</p>
-      <div className="mt-4 space-y-2">{children}</div>
+    <div className={cn("rounded-2xl border border-slate-200 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.05)]", prominent ? "p-5" : "p-4")}>
+      <p className={cn("font-semibold text-slate-950", prominent ? "text-lg font-black" : "text-sm")}>{title}</p>
+      <div className={cn(prominent ? "mt-5 space-y-3" : "mt-4 space-y-2")}>{children}</div>
     </div>
   );
 }
 
 function IcuPatientTeamPanel({ patient }: { patient: IcuPatient }) {
   return (
-    <IcuPatientDetailPanel title="Patient & team">
-      <InfoLine label="Admission source" value={patient.admissionSource} />
-      <InfoLine label="Admission time" value={patient.admissionTime} />
-      <InfoLine label="Admitting doctor" value={patient.admittingDoctor} />
-      <InfoLine label="Duty doctor" value={patient.dutyDoctor} />
-      <InfoLine label="Consulting doctor" value={patient.consultingDoctor} />
-      <InfoLine label="Ward nurse" value={patient.assignedWardNurse} />
+    <IcuPatientDetailPanel prominent title="Patient & team">
+      <IcuPatientOverviewInfoLine label="Admission source" value={patient.admissionSource} />
+      <IcuPatientOverviewInfoLine label="Admission time" value={patient.admissionTime} />
+      <IcuPatientOverviewInfoLine label="Admitting doctor" value={patient.admittingDoctor} />
+      <IcuPatientOverviewInfoLine label="Duty doctor" value={patient.dutyDoctor} />
+      <IcuPatientOverviewInfoLine label="Consulting doctor" value={patient.consultingDoctor} />
+      <IcuPatientOverviewInfoLine label="Ward nurse" value={patient.assignedWardNurse} />
     </IcuPatientDetailPanel>
   );
 }
 
 function IcuPatientLatestObservation({ latestVital, patient }: { latestVital?: (typeof icuVitals)[number]; patient: IcuPatient }) {
   return (
-    <IcuPatientDetailPanel title="Latest clinical observation">
-      <InfoLine label="Temperature" value={latestVital ? `${latestVital.temperature} C` : "-"} />
-      <InfoLine label="Respiratory rate" value={latestVital ? `${latestVital.respiratoryRate}/min` : "-"} />
-      <InfoLine label="GCS / pain" value={latestVital ? `${latestVital.gcs} / ${latestVital.painScore}` : "-"} />
-      <InfoLine label="Oxygen" value={latestVital?.oxygenFlow ?? patient.ventilatorStatus} />
-      <InfoLine label="Urine output" value={latestVital ? `${latestVital.urineOutput} ml/hr` : "-"} />
-      <InfoLine label="Last note" value={latestVital?.note ?? "No recent note"} />
+    <IcuPatientDetailPanel prominent title="Latest clinical observation">
+      <IcuPatientOverviewInfoLine label="Temperature" value={latestVital ? `${latestVital.temperature} C` : "-"} />
+      <IcuPatientOverviewInfoLine label="Respiratory rate" value={latestVital ? `${latestVital.respiratoryRate}/min` : "-"} />
+      <IcuPatientOverviewInfoLine label="GCS / pain" value={latestVital ? `${latestVital.gcs} / ${latestVital.painScore}` : "-"} />
+      <IcuPatientOverviewInfoLine label="Oxygen" value={latestVital?.oxygenFlow ?? patient.ventilatorStatus} />
+      <IcuPatientOverviewInfoLine label="Urine output" value={latestVital ? `${latestVital.urineOutput} ml/hr` : "-"} />
+      <IcuPatientOverviewInfoLine label="Last note" value={latestVital?.note ?? "No recent note"} />
     </IcuPatientDetailPanel>
+  );
+}
+
+function IcuPatientOverviewInfoLine({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[15px]">
+      <span className="font-semibold text-slate-500">{label}</span>
+      <span className="text-right font-black text-slate-950">{value}</span>
+    </div>
   );
 }
 
@@ -21086,16 +21111,32 @@ function MonitoringChart() {
 }
 
 function VitalsCharting() {
+  const searchParams = useSearchParams();
+  const activeTab: NurseEntryWorkspaceTab = searchParams.get("entryTab") === "vital-entries" ? "vital-entries" : "vitals";
+
   return (
     <div className="min-w-0 max-w-full space-y-4 overflow-hidden">
-      <NurseVitalsEntryForm />
-      <CollapsibleCommandPanel title="Vital entries" summary={`${icuVitals.length} records`}>
-        <div className="space-y-3 p-3">
-          <DateTimeFilterPanel compact embedded hideHeader />
-          <GenericTable title="Vitals Entries" rows={icuVitals} />
-        </div>
-      </CollapsibleCommandPanel>
+      <NurseEntryReviewTabs activePage={activeTab} />
+      {activeTab === "vital-entries" ? <VitalEntriesWorkspace /> : <NurseVitalsEntryForm />}
     </div>
+  );
+}
+
+function VitalEntriesWorkspace() {
+  return (
+    <Card className="min-w-0 max-w-full overflow-hidden">
+      <CardHeader>
+        <div>
+          <CardTitle>Vital Entries</CardTitle>
+          <CardDescription>Update nurse-entered ICU vital rows.</CardDescription>
+        </div>
+        <StatusPill tone="info">{icuVitals.length} records</StatusPill>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <DateTimeFilterPanel compact embedded hideHeader />
+        <GenericTable title="Vital Entries" rows={icuVitals} actions={["Update"]} />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -21274,8 +21315,6 @@ function NurseVitalsEntryForm() {
         </div>
       ) : null}
 
-      <NurseEntryReviewTabs activePage="vitals" />
-
       <Card className="min-w-0 max-w-full overflow-hidden">
         <CardContent className="min-w-0 space-y-4 p-4">
           <div className="grid min-w-0 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -21322,7 +21361,7 @@ function NurseVitalsEntryForm() {
             <NurseEntrySelect label="GCS score" value={gcsScore} onChange={setGcsScore} options={["15/Awake and alert", "14/Confused", "13/Drowsy", "12/Responds to voice", "9-11/Serious", "3-8/Critical"]} />
             <VitalNumberInput label="Pain score" value={painScore} onChange={setPainScore} suffix="/10" />
             <VitalNumberInput label="Urine output" value={urineOutput} onChange={setUrineOutput} suffix="ml/hr" />
-            <div className="min-h-[74px] rounded-md border border-border bg-surface-muted p-3">
+            <div className="min-h-[96px] rounded-md border border-border bg-surface-muted p-3">
               <div className="text-[11px] font-medium uppercase text-muted-foreground">Pulse deficit</div>
               <div className="mt-1 text-lg font-semibold text-foreground">{pulseDeficit} bpm</div>
               <span className={`mt-2 inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold ${pulseDeficit > 0 ? riskBadgeClass("Warning") : riskBadgeClass("Normal")}`}>
@@ -21408,10 +21447,10 @@ function BloodPressureInput({ sys, dia, setSys, setDia }: { sys: string; dia: st
   return (
     <label className="min-h-[66px] space-y-1 text-sm">
       <span className="font-medium text-foreground">Blood pressure</span>
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring/20">
-        <input className="h-10 min-w-0 rounded-l-md bg-transparent px-3 text-sm outline-none" inputMode="numeric" value={sys} onChange={(event) => setSys(event.target.value)} />
-        <span className="text-xs font-semibold text-muted-foreground">/</span>
-        <input className="h-10 min-w-0 rounded-r-md bg-transparent px-3 text-sm outline-none" inputMode="numeric" value={dia} onChange={(event) => setDia(event.target.value)} />
+      <div className="inline-grid max-w-full grid-cols-[76px_30px_76px] items-center rounded-md border border-input bg-background focus-within:ring-2 focus-within:ring-ring/20">
+        <input className="h-10 min-w-0 rounded-l-md bg-transparent px-2 text-center text-sm outline-none" inputMode="numeric" value={sys} onChange={(event) => setSys(event.target.value)} />
+        <span className="text-center text-xl font-black leading-none text-slate-700">/</span>
+        <input className="h-10 min-w-0 rounded-r-md bg-transparent px-2 text-center text-sm outline-none" inputMode="numeric" value={dia} onChange={(event) => setDia(event.target.value)} />
       </div>
     </label>
   );
@@ -21420,7 +21459,7 @@ function BloodPressureInput({ sys, dia, setSys, setDia }: { sys: string; dia: st
 function ObservationStatusPreview({ riskLevel, ready = true }: { riskLevel: ObservationRisk; ready?: boolean }) {
   if (!ready) {
     return (
-      <div className="min-h-[74px] rounded-md border border-border bg-surface-muted p-3">
+      <div className="min-h-[96px] rounded-md border border-border bg-surface-muted p-3">
         <div className="text-[11px] font-medium uppercase text-muted-foreground">System status</div>
         <div className="mt-2 inline-flex rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-muted-foreground">
           Pending entry
@@ -21438,7 +21477,7 @@ function ObservationStatusPreview({ riskLevel, ready = true }: { riskLevel: Obse
         : ["Safe", "Routine"];
 
   return (
-    <div className="min-h-[74px] rounded-md border border-border bg-surface-muted p-3">
+    <div className="min-h-[96px] rounded-md border border-border bg-surface-muted p-3">
       <div className="text-[11px] font-medium uppercase text-muted-foreground">System status</div>
       <div className="mt-2 flex flex-wrap gap-2">
         {preview.map((item) => <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${riskBadgeClass(riskLevel)}`} key={item}>{item}</span>)}
@@ -28696,7 +28735,7 @@ function SmartWorkflowField({ label, value, readOnly, wide }: { label: string; v
   );
 }
 
-function GenericTable({ title, rows }: { title: string; rows: Record<string, unknown>[] }) {
+function GenericTable({ title, rows, actions = ["View", "Update"] }: { title: string; rows: Record<string, unknown>[]; actions?: Array<"View" | "Update"> }) {
   const [activeRow, setActiveRow] = React.useState<{ mode: "View" | "Update"; row: Record<string, unknown> } | null>(null);
   const pagination = useIcuCommandPagination(rows);
   const columns = Object.keys(rows[0] ?? {}).filter((key) => key !== "id");
@@ -28722,8 +28761,8 @@ function GenericTable({ title, rows }: { title: string; rows: Record<string, unk
                     {columns.map((key) => <td className="border-r border-border px-3 py-2" key={key}>{renderValue(key, row[key])}</td>)}
                     <td className="px-3 py-2">
                       <div className="flex flex-wrap gap-1">
-                        <Button size="sm" variant="outline" onClick={() => setActiveRow({ mode: "View", row })}>View</Button>
-                        <Button size="sm" variant="outline" onClick={() => setActiveRow({ mode: "Update", row })}>Update</Button>
+                        {actions.includes("View") ? <Button size="sm" variant="outline" onClick={() => setActiveRow({ mode: "View", row })}>View</Button> : null}
+                        {actions.includes("Update") ? <Button size="sm" variant="outline" onClick={() => setActiveRow({ mode: "Update", row })}>Update</Button> : null}
                       </div>
                     </td>
                   </tr>

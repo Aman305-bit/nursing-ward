@@ -30,7 +30,21 @@ function SubmitOrderCard({ count, onSubmit }: { count: number; onSubmit: () => v
   );
 }
 
-export function DrugsTab() {
+function normalizePrescriptionText(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function findPrescribedDrugOrder(orders: DrugOrder[], prescribedOrder: string) {
+  const normalizedOrder = normalizePrescriptionText(prescribedOrder);
+  const tokens = normalizedOrder.split(/\s+/).filter((token) => token.length > 2 && !/^\d+$/.test(token));
+  return orders.find((order) => {
+    const haystack = normalizePrescriptionText(`${order.genericName} ${order.name}`);
+    const genericLead = normalizePrescriptionText(order.genericName).split(/\s+/)[0];
+    return (genericLead && normalizedOrder.includes(genericLead)) || tokens.some((token) => haystack.includes(token));
+  });
+}
+
+export function DrugsTab({ prescribedOrder, prescribedInstruction }: { prescribedOrder?: string; prescribedInstruction?: string } = {}) {
   const [orders] = React.useState<DrugOrder[]>(initialOrders);
   const [search, setSearch] = React.useState("");
   const [selectedDrugIds, setSelectedDrugIds] = React.useState<string[]>([]);
@@ -39,6 +53,19 @@ export function DrugsTab() {
   const [activeEditorId, setActiveEditorId] = React.useState<string | null>(null);
   const [flashIds, setFlashIds] = React.useState<Record<string, boolean>>({});
   const editorRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
+  const appliedPrescriptionRef = React.useRef("");
+
+  React.useEffect(() => {
+    const prescription = `${prescribedOrder ?? ""} ${prescribedInstruction ?? ""}`.trim();
+    if (!prescription || appliedPrescriptionRef.current === prescription) return;
+    appliedPrescriptionRef.current = prescription;
+    const matchedOrder = findPrescribedDrugOrder(orders, prescription);
+    setSearch(prescribedOrder ?? "");
+    if (!matchedOrder) return;
+    setSelectedDrugIds((current) => (current.includes(matchedOrder.id) ? current : [matchedOrder.id, ...current]));
+    setDrafts((current) => ({ ...current, [matchedOrder.id]: current[matchedOrder.id] ?? makeDraft(matchedOrder) }));
+    setActiveEditorId(matchedOrder.id);
+  }, [orders, prescribedInstruction, prescribedOrder]);
 
   const scopedOrders =
     drugScope === "All Drugs"
