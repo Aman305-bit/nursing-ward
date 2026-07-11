@@ -16257,13 +16257,6 @@ function IcuPatientCommandProfile({
 
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="overview">
           {initialProfileAction === "verification" ? <IcuPatientProfileVerificationPanel allergyCount={allergyCount} latestVital={latestVital} patient={patient} /> : null}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "overview", undefined, lockedTabQuery)} icon={ShieldAlert} label="Risk score" value={patient.criticalityScore} detail={patient.currentStatus} tone={riskTone} />
-            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "monitoring", "24h-chart", lockedTabQuery)} icon={HeartPulse} label="Latest vitals" value={latestVital ? `SpO2 ${latestVital.spo2}%` : "-"} detail={latestVital ? `${latestVital.bp} | P ${latestVital.pulse}` : "Chart pending"} tone={vitalTone} />
-            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "monitoring", "ventilation", lockedTabQuery)} icon={Activity} label="Ventilation" value={patient.ventilatorStatus} detail={patient.lastVitalsTime} tone={patient.ventilatorStatus === "Room air" ? "success" : "purple"} />
-            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "monitoring", "intake-output", lockedTabQuery)} icon={Droplets} label="Fluid balance" value={`${balance} ml`} detail={`${totalIntake} in / ${totalOutput} out`} tone={balanceTone} />
-            <IcuPatientDetailMetric href={icuPatientDetailHref(patient.id, "events", undefined, lockedTabQuery)} icon={AlertTriangle} label="Open alerts" value={openAlerts.length} detail={`${dueMeds.length} meds due, ${activeTasks.length} tasks pending`} tone={openAlerts.length ? "warning" : "success"} />
-          </div>
           <div className="grid gap-4 lg:grid-cols-2">
             <IcuPatientTeamPanel patient={patient} />
             <IcuPatientLatestObservation latestVital={latestVital} patient={patient} />
