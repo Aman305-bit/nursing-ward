@@ -7947,7 +7947,7 @@ function WardNursePatientVerificationDialog({
             <Input className="h-11" placeholder="Notes if any..." />
             <Button className="h-11 font-black" onClick={() => onVerify(patient.id)}>
               <CheckCircle2 className="mr-2 size-4" aria-hidden="true" />
-              Continue to assessment
+              Verify Now
             </Button>
           </div>
         </Dialog.Content>
