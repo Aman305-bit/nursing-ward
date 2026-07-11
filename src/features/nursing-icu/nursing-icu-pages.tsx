@@ -16357,7 +16357,7 @@ function IcuPatientCommandProfile({
         </TabsContent>
 
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="events">
-          <IcuPatientEventsWorkspace initialFocus={initialEventFocus} patient={patient} results={resultRows} />
+          <IcuPatientEventsWorkspace hidePatientSelector initialFocus={initialEventFocus} patient={patient} results={resultRows} />
         </TabsContent>
 
         <TabsContent className="space-y-4 px-5 pb-5 pt-5" value="shift-summary">
@@ -17354,7 +17354,7 @@ function IcuPatientEventsWorkspace({
   results: IcuPatientResultRow[];
 }) {
   const patientSelection = useWardNursePatientContext(patient);
-  const activePatient = patientSelection.patient;
+  const activePatient = hidePatientSelector ? patient : patientSelection.patient;
   const activeResults = activePatient.id === patient.id ? results : buildIcuPatientResultRows(activePatient);
   const events = React.useMemo(() => buildIcuPatientEvents(activePatient, activeResults), [activePatient, activeResults]);
   const [typeFilter, setTypeFilter] = React.useState(() => initialFocus === "open-alerts" ? "Alert" : "All events");
