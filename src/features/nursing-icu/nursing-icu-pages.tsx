@@ -1878,7 +1878,7 @@ function IcuDailyNursingRecordTable({ vitals, tasks, instructions }: { vitals: t
 
 type NurseEntryWorkspaceTab = "vitals" | "vital-entries" | "nurse-review";
 
-function NurseEntryReviewTabs({ activePage }: { activePage: NurseEntryWorkspaceTab }) {
+function NurseEntryReviewTabs({ activePage, showNurseReview = activePage === "nurse-review" }: { activePage: NurseEntryWorkspaceTab; showNurseReview?: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const inIcuCommandCenter = pathname.startsWith("/icu-command-center");
@@ -1903,11 +1903,11 @@ function NurseEntryReviewTabs({ activePage }: { activePage: NurseEntryWorkspaceT
       label: "Vital Entries",
       route: buildRoute(inIcuCommandCenter ? "/icu-command-center/nursing/nurse-entry" : "/nursing-icu/vitals", "vital-entries"),
     },
-    {
-      id: "nurse-review",
+    ...(showNurseReview ? [{
+      id: "nurse-review" as const,
       label: "Nurse Review",
       route: buildRoute(inIcuCommandCenter ? "/icu-command-center/nursing/nurse-review" : "/nursing-icu/nurse-review"),
-    },
+    }] : []),
   ] satisfies Array<{ id: NurseEntryWorkspaceTab; label: string; route: string }>;
 
   return (
