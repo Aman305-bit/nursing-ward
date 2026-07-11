@@ -17378,8 +17378,10 @@ function IcuPatientEventsWorkspace({
       ) : null}
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_14px_32px_rgba(15,23,42,0.05)]">
-        <div className="grid gap-3 border-b border-slate-100 bg-white p-4 md:grid-cols-[minmax(220px,1fr)_auto] md:items-end">
-          <NativeSelect label="Event type" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
+        <div className="flex flex-col gap-3 border-b border-slate-100 bg-white p-4 sm:flex-row sm:items-end">
+          <div className="w-full sm:w-56">
+            <NativeSelect label="Event type" value={typeFilter} onChange={setTypeFilter} options={typeOptions} />
+          </div>
           <Button variant="outline" onClick={() => {
             setTypeFilter("All events");
           }}>Reset</Button>
@@ -17441,18 +17443,16 @@ export function WardNursePatientEventUpdatePage() {
 
   return (
     <div className="min-w-0 max-w-full space-y-4 pb-8">
-      <PageHeader
-        eyebrow="Ward Nurse"
-        title="Patient Event Update"
-        description="Select an assigned patient to review event updates, alerts, vitals, medication, I/O, and pending actions."
-      />
-      <WardNursePatientContextSelector
-        label="Patient"
-        onChange={setPatientId}
-        patients={assignedPatients}
-        placeholder="Select patient"
-        value={patientId}
-      />
+      {selectedPatient ? <WardNurseSelectedPatientHeader patient={selectedPatient} /> : null}
+      <div className="max-w-md">
+        <WardNursePatientContextSelector
+          label="Patient"
+          onChange={setPatientId}
+          patients={assignedPatients}
+          placeholder="Select patient"
+          value={patientId}
+        />
+      </div>
       {selectedPatient ? (
         <IcuPatientEventsWorkspace
           hidePatientSelector
@@ -28792,7 +28792,7 @@ function NursingNotes() {
 
   return (
     <div className="space-y-4">
-      {selectedPatient ? <WardNurseNotesPatientHeader patient={selectedPatient} /> : null}
+      {selectedPatient ? <WardNurseSelectedPatientHeader patient={selectedPatient} /> : null}
       <WardNurseNotesPatientSelector
         onChange={setPatientId}
         onSearchChange={setPatientSearch}
@@ -28827,7 +28827,7 @@ function NursingNotes() {
   );
 }
 
-function WardNurseNotesPatientHeader({ patient }: { patient: IcuPatient }) {
+function WardNurseSelectedPatientHeader({ patient }: { patient: IcuPatient }) {
   return (
     <div
       className="max-w-full overflow-x-auto rounded-xl border border-[#7367f0]/40 px-4 py-3 text-white shadow-[0_8px_20px_rgba(115,103,240,0.24)]"
