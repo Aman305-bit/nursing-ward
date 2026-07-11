@@ -7544,7 +7544,7 @@ function WardNurseAssignedPatientsCommand({ patients }: { patients: IcuPatient[]
             <thead className="border-b border-slate-200 bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-950">
               <tr>
                 <th className="sticky left-0 z-30 w-[220px] bg-slate-50 px-5 py-3.5 text-left shadow-[8px_0_14px_-16px_rgba(15,23,42,0.55)]">Patient / Bed</th>
-                <th className="w-[190px] whitespace-nowrap px-3 py-3.5 text-center text-[11px] font-black">Profile Verification</th>
+                <th className="w-[190px] px-3 py-3.5 text-center">Profile Verification</th>
                 <th className="w-[190px] px-3 py-3.5 text-center">Assessment / Vitals</th>
                 <th className="w-[160px] px-3 py-3.5 text-center">Medication</th>
                 <th className="w-[205px] px-3 py-3.5 text-center">Doctor Orders</th>
