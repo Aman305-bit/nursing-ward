@@ -435,7 +435,7 @@ function NursingIcuModulePageInner({
   const chromeLessPage = page === "transfer-discharge";
   const cleanCommandPages: NursingIcuPageId[] = ["operational-analytics", "clinical-analytics", "device-analytics", "pilot-outcome", "adoption-analytics", "users-roles", "configuration", "audit-logs"];
   const isCleanCommandPage = cleanCommandPages.includes(page);
-  const hiddenModuleTabPages: NursingIcuPageId[] = ["dashboard", "executive-dashboard", "executive-drilldown", "executive-documentation", "executive-owner", "executive-action", "notifications-tasks", "patient-search", "patient-overview", "progress-notes", "doctor-order-entry", "orders-care-plans", "family-communication", "arrival-bed-allocation", "smart-bed-view", "icu-operations", "device-monitoring", "edge-device-management", "connectivity-dashboard", "signal-health", "patient-risk-center", "patient-risk-drilldown", "early-warning-scores", "alerts", "doctor-rounds", "icu-round-2", "escalation-center", "remote-command-center", "remote-consultations", "escalated-cases", "tele-icu-readiness", "tele-icu-local-team", "tele-icu-remote-md", "tele-icu-sla", "escalated-trigger", "escalated-severity", "escalated-source", "escalated-owner-chain", "escalated-sla", "escalated-action", "escalated-outcome", "head-nurse-console", "ward-nurse-activities", "shift-handover", "shift-pending-summary", "raise-issue", "tasks", "intake-output", "medicine-receive-verify", "medication-administration", "patient-medication"];
+  const hiddenModuleTabPages: NursingIcuPageId[] = ["dashboard", "executive-dashboard", "executive-drilldown", "executive-documentation", "executive-owner", "executive-action", "notifications-tasks", "patient-search", "patient-overview", "progress-notes", "doctor-order-entry", "orders-care-plans", "family-communication", "arrival-bed-allocation", "smart-bed-view", "icu-operations", "device-monitoring", "edge-device-management", "connectivity-dashboard", "signal-health", "patient-risk-center", "patient-risk-drilldown", "early-warning-scores", "alerts", "doctor-rounds", "icu-round-2", "escalation-center", "remote-command-center", "remote-consultations", "escalated-cases", "tele-icu-readiness", "tele-icu-local-team", "tele-icu-remote-md", "tele-icu-sla", "escalated-trigger", "escalated-severity", "escalated-source", "escalated-owner-chain", "escalated-sla", "escalated-action", "escalated-outcome", "head-nurse-console", "ward-nurse-activities", "shift-handover", "shift-pending-summary", "raise-issue", "tasks", "intake-output", "medicine-receive-verify", "medication-administration", "patient-medication", "nursing-notes"];
   const useNurseEntryReviewTabs = page === "vitals" || page === "nurse-review";
   const hideModuleTabs = chromeLessPage || hiddenModuleTabPages.includes(page) || useNurseEntryReviewTabs || isCleanCommandPage;
   const streamlinedPage = (hideModuleTabs && !isCleanCommandPage) || page === "intake-output" || page === "head-nurse-console" || page === "ward-nurse-activities";
@@ -28798,6 +28798,7 @@ function NursingNotes() {
 
   return (
     <div className="space-y-4">
+      {selectedPatient ? <WardNurseNotesPatientHeader patient={selectedPatient} /> : null}
       <WardNurseNotesPatientSelector
         onChange={setPatientId}
         onSearchChange={setPatientSearch}
@@ -28807,24 +28808,21 @@ function NursingNotes() {
         value={patientId}
       />
       {selectedPatient ? (
-        <>
-          <WardNurseNotesPatientHeader patient={selectedPatient} />
-          <NotesPage
-            compactCategoryView
-            forceCategoryView
-            hidePatientBanner
-            lockedCategory="Nurse Notes"
-            patientContext={{
-              patientId: selectedPatient.id,
-              name: selectedPatient.patientName,
-              mrn: selectedPatient.mrn,
-              ageSex: selectedPatient.ageGender,
-              location: `${selectedPatient.unit} | ${selectedPatient.bedNo}`,
-              encounterId: selectedPatient.mrn,
-              status: selectedPatient.currentStatus,
-            }}
-          />
-        </>
+        <NotesPage
+          compactCategoryView
+          forceCategoryView
+          hidePatientBanner
+          lockedCategory="Nurse Notes"
+          patientContext={{
+            patientId: selectedPatient.id,
+            name: selectedPatient.patientName,
+            mrn: selectedPatient.mrn,
+            ageSex: selectedPatient.ageGender,
+            location: `${selectedPatient.unit} | ${selectedPatient.bedNo}`,
+            encounterId: selectedPatient.mrn,
+            status: selectedPatient.currentStatus,
+          }}
+        />
       ) : (
         <WardNurseNoPatientSelected
           title="No patient selected"
