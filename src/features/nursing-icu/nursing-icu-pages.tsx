@@ -28786,10 +28786,6 @@ function NursingNotes() {
   );
   const [patientId, setPatientId] = React.useState("");
   const selectedPatient = assignedPatients.find((patient) => patient.id === patientId) ?? null;
-  const rows = React.useMemo(
-    () => (selectedPatient ? buildWardNurseNursingNoteRows(selectedPatient) : []),
-    [selectedPatient],
-  );
 
   return (
     <div className="space-y-4">
@@ -28801,10 +28797,19 @@ function NursingNotes() {
         value={patientId}
       />
       {selectedPatient ? (
-        <>
-          <DateTimeFilterPanel title="Nursing Notes Date & Time Filter" compact />
-          <GenericTable title="Nursing Notes" rows={rows} />
-        </>
+        <NotesPage
+          forceCategoryView
+          lockedCategory="Nurse Notes"
+          patientContext={{
+            patientId: selectedPatient.id,
+            name: selectedPatient.patientName,
+            mrn: selectedPatient.mrn,
+            ageSex: selectedPatient.ageGender,
+            location: `${selectedPatient.unit} | ${selectedPatient.bedNo}`,
+            encounterId: selectedPatient.mrn,
+            status: selectedPatient.currentStatus,
+          }}
+        />
       ) : (
         <WardNurseNoPatientSelected
           title="No patient selected"
@@ -28813,68 +28818,6 @@ function NursingNotes() {
       )}
     </div>
   );
-}
-
-function buildWardNurseNursingNoteRows(patient: IcuPatient): Record<string, unknown>[] {
-  const vitalNotes = icuVitals
-    .filter((row) => row.patientId === patient.id)
-    .slice(-3)
-    .reverse()
-    .map((row) => ({
-      id: `vital-note-${row.id}`,
-      type: row.abnormal ? "Critical event note" : "Shift assessment",
-      patient: patient.patientName,
-      bed: patient.bedNo,
-      author: row.nurse,
-      time: row.time,
-      note: row.note,
-      status: row.abnormal ? "Needs follow-up" : "Signed",
-    }));
-
-  const taskNotes = icuTasks
-    .filter((row) => row.patientId === patient.id && row.assignedTo.toLowerCase().includes("nurse"))
-    .slice(0, 3)
-    .map((row) => ({
-      id: `task-note-${row.id}`,
-      type: "Instruction follow-up",
-      patient: patient.patientName,
-      bed: patient.bedNo,
-      author: row.assignedTo,
-      time: row.dueTime,
-      note: `${row.title}. ${row.remarks}`,
-      status: row.status,
-    }));
-
-  const medicationNotes = medicationRows
-    .filter((row) => row.patientId === patient.id)
-    .slice(0, 2)
-    .map((row) => ({
-      id: `med-note-${row.id}`,
-      type: "Medication note",
-      patient: patient.patientName,
-      bed: patient.bedNo,
-      author: row.administeredBy === "-" ? patient.assignedWardNurse : row.administeredBy,
-      time: row.scheduledTime,
-      note: `${row.medication} ${row.dose} ${row.route}. ${row.reason}`,
-      status: row.status,
-    }));
-
-  const ioNotes = intakeOutputRows
-    .filter((row) => row.patientId === patient.id && row.note)
-    .slice(-2)
-    .reverse()
-    .map((row) => ({
-      id: `io-note-${row.id}`,
-      type: "Intake / output note",
-      patient: patient.patientName,
-      bed: patient.bedNo,
-      author: row.nurse,
-      time: row.time,
-      note: row.note,
-      status: row.status,
-    }));
-
-  return [...vitalNotes, ...taskNotes, ...medicationNotes, ...ioNotes];
 }
 
 function AuditLogs() {

@@ -368,6 +368,23 @@ type NoteTableActions = {
   onView: (note: Note) => void;
 };
 
+export type NotesPatientContext = {
+  patientId: string;
+  name: string;
+  mrn: string;
+  ageSex: string;
+  location: string;
+  encounterId: string;
+  allergies?: string;
+  status?: string;
+};
+
+type NotesPageProps = {
+  forceCategoryView?: boolean;
+  lockedCategory?: NoteCategory;
+  patientContext?: NotesPatientContext;
+};
+
 const medicalOtherSpecialty = "Others";
 const medicalSpecialties = [
   "Neurology",
@@ -673,6 +690,15 @@ const notesCategories = categories;
 
 function getCategoryDisplayLabel(category: string) {
   return category === "Surgery Notes" ? "Surgical Notes" : category;
+}
+
+function getPatientInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "PT";
 }
 
 const initialNotes: Note[] = [
@@ -1160,7 +1186,7 @@ function priorityRank(priority: Note["priority"]) {
   return priority === "High" ? 0 : priority === "Medium" ? 1 : 2;
 }
 
-export function NotesPage() {
+export function NotesPage({ forceCategoryView = false, lockedCategory, patientContext }: NotesPageProps = {}) {
   const searchParams = useSearchParams();
   const [notes, setNotes] = React.useState<Note[]>(() => initialNotes.map(normalizeNote));
   const [notesLoaded, setNotesLoaded] = React.useState(false);
@@ -1194,6 +1220,17 @@ export function NotesPage() {
   const filtersRequested = searchParams.get("filters") === "open";
 
   React.useEffect(() => {
+    if (lockedCategory) {
+      const nextCategory = categories.find((item) => item.label === lockedCategory);
+      if (nextCategory) {
+        setActiveTab(nextCategory.id);
+        setCategory(nextCategory.label);
+        setFilterLockedCategory(nextCategory.label);
+        setSpecialty(nextCategory.specialties.includes(requestedSpecialty ?? "") ? requestedSpecialty ?? "All Specialties" : "All Specialties");
+        return;
+      }
+    }
+
     const nextCategory = categories.find((item) => item.id === requestedCategory);
     if (nextCategory) {
       setActiveTab(nextCategory.id);
@@ -1207,7 +1244,7 @@ export function NotesPage() {
     setCategory("All Categories");
     setFilterLockedCategory(null);
     setSpecialty("All Specialties");
-  }, [requestedCategory, requestedSpecialty]);
+  }, [lockedCategory, requestedCategory, requestedSpecialty]);
 
   React.useEffect(() => {
     const storageKey = "notes-data";
@@ -1243,7 +1280,11 @@ export function NotesPage() {
     if (notesLoaded) window.localStorage.setItem("notes-data", JSON.stringify(notes));
   }, [notes, notesLoaded]);
 
-  const visibleNotes = notes.filter((note) => note.category !== "Special Instruction Notes");
+  const visibleNotes = notes.filter((note) => {
+    if (note.category === "Special Instruction Notes") return false;
+    if (patientContext?.patientId && note.patientId && note.patientId !== patientContext.patientId) return false;
+    return true;
+  });
 
   const filteredNotes = React.useMemo(
     () =>
@@ -1389,24 +1430,28 @@ export function NotesPage() {
     onStatusChange: changeNoteStatus,
     onView: setViewingNote,
   };
+  const forcedCategory = lockedCategory ? categories.find((item) => item.label === lockedCategory) : undefined;
+  const patientInitials = patientContext ? getPatientInitials(patientContext.name) : "JD";
 
   return (
     <div className="notes-select-safe min-w-0 space-y-4 py-4">
       <section className="flex flex-col gap-3 border-b border-border pb-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary">JD</div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary">{patientInitials}</div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h1 className="text-lg font-semibold">John Doe</h1>
-              <Badge tone="info">Inpatient</Badge>
+              <h1 className="text-lg font-semibold">{patientContext?.name ?? "John Doe"}</h1>
+              <Badge tone="info">{patientContext?.status ?? "Inpatient"}</Badge>
             </div>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">MRN: 10000098 &nbsp; | &nbsp; Male &nbsp; | &nbsp; 65 Y &nbsp; | &nbsp; DOB: 12/05/1959</p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              MRN: {patientContext?.mrn ?? "10000098"} &nbsp; | &nbsp; {patientContext?.ageSex ?? "Male | 65 Y"}
+            </p>
           </div>
         </div>
         <div className="grid min-w-0 grid-cols-3 divide-x rounded-md border border-border bg-surface">
-          <PatientFact label="Allergies" value="Penicillin, Peanuts" tone="text-danger" />
-          <PatientFact label="Location" value="ICU - 01, Bed 5" tone="text-blue-600" />
-          <PatientFact label="Encounter" value="ENC123456789" tone="text-emerald-600" />
+          <PatientFact label="Allergies" value={patientContext?.allergies ?? "Penicillin, Peanuts"} tone="text-danger" />
+          <PatientFact label="Location" value={patientContext?.location ?? "ICU - 01, Bed 5"} tone="text-blue-600" />
+          <PatientFact label="Encounter" value={patientContext?.encounterId ?? "ENC123456789"} tone="text-emerald-600" />
         </div>
       </section>
 
@@ -1417,7 +1462,16 @@ export function NotesPage() {
         </div>
       ) : null}
 
-      {activeTab === "all" ? (
+      {forceCategoryView && forcedCategory ? (
+        <CategoryView
+          category={forcedCategory}
+          key={`${forcedCategory.id}-${requestedSpecialty ?? ""}`}
+          notes={visibleNotes}
+          onNewNote={openNewNote}
+          specialty={specialty}
+          actions={tableActions}
+        />
+      ) : activeTab === "all" ? (
         <AllNotesOverview
           actions={tableActions}
           allNotes={visibleNotes}
@@ -1481,6 +1535,7 @@ export function NotesPage() {
         }}
         onSave={addNote}
         open={newNoteOpen}
+        patientContext={patientContext}
       />
       <NoteDetailsModal
         note={viewingNote}
@@ -2174,6 +2229,7 @@ function NewNoteModal({
   onOpenChange,
   onSave,
   open,
+  patientContext,
 }: {
   editingNote: Note | null;
   initialCategory: NoteCategory;
@@ -2181,6 +2237,7 @@ function NewNoteModal({
   onOpenChange: (open: boolean) => void;
   onSave: (note: Omit<Note, "id" | "date">) => void;
   open: boolean;
+  patientContext?: NotesPatientContext;
 }) {
   const [title, setTitle] = React.useState("");
   const [category, setCategory] = React.useState<NoteCategory>(initialCategory);
@@ -2231,8 +2288,8 @@ function NewNoteModal({
   const [primaryDiagnosisPopupOpen, setPrimaryDiagnosisPopupOpen] = React.useState(false);
   const [secondaryDiagnosisPopupOpen, setSecondaryDiagnosisPopupOpen] = React.useState(false);
   const [practitionerId, setPractitionerId] = React.useState("");
-  const [patientId, setPatientId] = React.useState("10000098");
-  const [encounterId, setEncounterId] = React.useState("ENC123456789");
+  const [patientId, setPatientId] = React.useState(patientContext?.patientId ?? "10000098");
+  const [encounterId, setEncounterId] = React.useState(patientContext?.encounterId ?? "ENC123456789");
   const [serviceDateTime, setServiceDateTime] = React.useState(toDateTimeLocalValue());
   const [authenticatedSigner, setAuthenticatedSigner] = React.useState("");
   const [amendmentReason, setAmendmentReason] = React.useState("");
@@ -2260,7 +2317,7 @@ function NewNoteModal({
     : isPharmacyNote
       ? "Pharmacy note is required."
       : "Clinical note is required.";
-  const hasPatientVisitContext = isMedicalNote || isSurgeryNote || isOperativeNote || isPharmacyNote || isAlliedHealthNote || shouldSaveSpecialInstruction;
+  const hasPatientVisitContext = Boolean(patientContext) || isMedicalNote || isSurgeryNote || isOperativeNote || isPharmacyNote || isAlliedHealthNote || shouldSaveSpecialInstruction;
   const isAmendment = isMedicalNote && editingNote?.status === "Signed";
   const diagnosisOptions = React.useMemo(() => {
     const baseOptions = medicalDiagnosisBySpecialty[specialty] ?? medicalDiagnosisBySpecialty["General Medicine"];
@@ -2356,8 +2413,8 @@ function NewNoteModal({
     setPrimaryDiagnosisPopupOpen(false);
     setSecondaryDiagnosisPopupOpen(false);
     setPractitionerId(editingNote?.practitionerId ?? "");
-    setPatientId(editingNote?.patientId ?? "10000098");
-    setEncounterId(editingNote?.encounterId ?? "ENC123456789");
+    setPatientId(editingNote?.patientId ?? patientContext?.patientId ?? "10000098");
+    setEncounterId(editingNote?.encounterId ?? patientContext?.encounterId ?? "ENC123456789");
     setServiceDateTime(editingNote?.serviceDateTime ?? toDateTimeLocalValue());
     setAuthenticatedSigner(editingNote?.authenticatedSigner ?? editingNote?.signedBy ?? editingNote?.author ?? defaultAuthor);
     setAmendmentReason("");
@@ -2388,7 +2445,7 @@ function NewNoteModal({
           editingNote?.operative?.durationMinutes ? `${editingNote.operative.durationMinutes} minute(s)` : "",
         ].filter(Boolean).join(" "),
     });
-  }, [editingNote, initialCategory, initialMedicalNoteSection, open]);
+  }, [editingNote, initialCategory, initialMedicalNoteSection, open, patientContext?.encounterId, patientContext?.patientId]);
 
   function changeSpecialty(value: string) {
     setSpecialty(value);
@@ -2580,7 +2637,7 @@ function NewNoteModal({
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border border-border bg-surface-muted/30 px-3 py-2">
             <div className="text-xs">
               <span className="text-muted-foreground">Patient</span>
-              <span className="ml-2 font-semibold">John Doe</span>
+              <span className="ml-2 font-semibold">{patientContext?.name ?? "John Doe"}</span>
               <span className="ml-2 text-muted-foreground">#{patientId}</span>
             </div>
             <div className="text-xs">

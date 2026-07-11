@@ -92,6 +92,7 @@ export const nursingRolePermissions: Record<NursingRoleKey, NursingRolePermissio
       "/icu-command-center/nursing/medicine-receive-verify",
       "/icu-command-center/nursing/order",
       "/icu-command-center/nursing/medication-administration",
+      "/icu-command-center/nursing/nursing-notes",
       "/icu-command-center/nursing/early-warning-score",
       "/icu-command-center/nursing/patient-event-update",
       "/icu-command-center/nursing/shift-handover",
