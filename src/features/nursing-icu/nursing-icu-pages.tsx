@@ -21174,11 +21174,89 @@ function MonitoringChart() {
 function VitalsCharting() {
   const searchParams = useSearchParams();
   const activeTab: NurseEntryWorkspaceTab = searchParams.get("entryTab") === "vital-entries" ? "vital-entries" : "vitals";
+  const requestedPatientId = searchParams.get("patientId") ?? "";
+  const initialPatientId = icuPatients.some((patient) => patient.id === requestedPatientId) ? requestedPatientId : "";
+  const [patientId, setPatientId] = React.useState(initialPatientId);
+  const selectedPatient = patientId ? icuPatients.find((patient) => patient.id === patientId) : undefined;
+  const isLockedPatientFlow = searchParams.get("locked") === "1" && Boolean(selectedPatient);
+  const [headerMeta, setHeaderMeta] = React.useState({ nurse: "", status: "Vitals pending" });
+
+  React.useEffect(() => {
+    if (requestedPatientId && icuPatients.some((patient) => patient.id === requestedPatientId)) {
+      setPatientId(requestedPatientId);
+    } else {
+      setPatientId("");
+    }
+  }, [requestedPatientId]);
+
+  React.useEffect(() => {
+    if (!selectedPatient) {
+      setHeaderMeta({ nurse: "", status: "Vitals pending" });
+    }
+  }, [selectedPatient]);
+
+  const updateHeaderMeta = React.useCallback((nextMeta: { nurse: string; status: string }) => {
+    setHeaderMeta((current) => (
+      current.nurse === nextMeta.nurse && current.status === nextMeta.status ? current : nextMeta
+    ));
+  }, []);
 
   return (
     <div className="min-w-0 max-w-full space-y-4 overflow-hidden">
+      {selectedPatient ? (
+        <NurseEntryPatientHeader
+          nurse={headerMeta.nurse || selectedPatient.assignedWardNurse}
+          patient={selectedPatient}
+          status={headerMeta.status}
+        />
+      ) : null}
       <NurseEntryReviewTabs activePage={activeTab} />
-      {activeTab === "vital-entries" ? <VitalEntriesWorkspace /> : <NurseVitalsEntryForm />}
+      {activeTab === "vital-entries" ? (
+        <VitalEntriesWorkspace />
+      ) : (
+        <NurseVitalsEntryForm
+          isLockedPatientFlow={isLockedPatientFlow}
+          onHeaderMetaChange={updateHeaderMeta}
+          patientId={patientId}
+          selectedPatient={selectedPatient}
+          setPatientId={setPatientId}
+        />
+      )}
+    </div>
+  );
+}
+
+function NurseEntryPatientHeader({
+  nurse,
+  patient,
+  status,
+}: {
+  nurse: string;
+  patient: IcuPatient;
+  status: string;
+}) {
+  return (
+    <div
+      className="max-w-full overflow-x-auto rounded-xl border border-[#7367f0]/40 px-4 py-3 text-white shadow-[0_8px_20px_rgba(115,103,240,0.24)]"
+      style={{ background: "linear-gradient(90deg,#7367f0,#5b8def)" }}
+    >
+      <div className="flex min-w-max items-center gap-6 text-sm font-semibold text-white/90">
+        <span className="text-base font-bold text-white">{patient.patientName}</span>
+        <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-bold uppercase text-red-700">{status}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">MR: {patient.mrn}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Age/Sex: {patient.ageGender}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Bed: {patient.bedNo}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Unit: {patient.unit}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Doctor: {patient.admittingDoctor}</span>
+        <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Nurse: {nurse}</span>
+        <button
+          className="ml-auto inline-flex h-9 items-center justify-center rounded-xl border border-white/30 bg-white px-4 text-xs font-semibold text-[#7367f0] shadow-sm transition hover:bg-white/90"
+          onClick={() => window.history.back()}
+          type="button"
+        >
+          Back
+        </button>
+      </div>
     </div>
   );
 }
@@ -21292,11 +21370,19 @@ function NurseReview() {
   );
 }
 
-function NurseVitalsEntryForm() {
-  const searchParams = useSearchParams();
-  const requestedPatientId = searchParams.get("patientId") ?? "";
-  const initialPatientId = icuPatients.some((patient) => patient.id === requestedPatientId) ? requestedPatientId : "";
-  const [patientId, setPatientId] = React.useState(initialPatientId);
+function NurseVitalsEntryForm({
+  isLockedPatientFlow,
+  onHeaderMetaChange,
+  patientId,
+  selectedPatient,
+  setPatientId,
+}: {
+  isLockedPatientFlow: boolean;
+  onHeaderMetaChange: (meta: { nurse: string; status: string }) => void;
+  patientId: string;
+  selectedPatient?: IcuPatient;
+  setPatientId: (patientId: string) => void;
+}) {
   const [entryDate, setEntryDate] = React.useState("");
   const [entryTime, setEntryTime] = React.useState("");
   const [respiratoryRate, setRespiratoryRate] = React.useState("");
@@ -21319,8 +21405,6 @@ function NurseVitalsEntryForm() {
   const [pulseSite, setPulseSite] = React.useState("");
   const [pulseQuality, setPulseQuality] = React.useState("");
   const [pulseAction, setPulseAction] = React.useState("");
-  const selectedPatient = patientId ? icuPatients.find((patient) => patient.id === patientId) : undefined;
-  const isLockedPatientFlow = searchParams.get("locked") === "1" && Boolean(selectedPatient);
   const pulseDeficit = Math.max(0, Number(monitorHeartRate || 0) - Number(pulseRate || 0));
   const hasObservationInput = [respiratoryRate, o2Saturation, pulseRate, temperature, urineOutput, painScore, gcsScore].some((value) => value.trim().length > 0);
   const riskLevel = hasObservationInput
@@ -21336,40 +21420,14 @@ function NurseVitalsEntryForm() {
     : "Normal";
 
   React.useEffect(() => {
-    if (requestedPatientId && icuPatients.some((patient) => patient.id === requestedPatientId)) {
-      setPatientId(requestedPatientId);
-    } else {
-      setPatientId("");
-    }
-  }, [requestedPatientId]);
+    onHeaderMetaChange({
+      nurse: recordedBy || selectedPatient?.assignedWardNurse || "",
+      status: selectedPatient && hasObservationInput ? riskLevel : "Vitals pending",
+    });
+  }, [hasObservationInput, onHeaderMetaChange, recordedBy, riskLevel, selectedPatient]);
 
   return (
     <div className="min-w-0 space-y-3">
-      {selectedPatient ? (
-        <div
-          className="max-w-full overflow-x-auto rounded-xl border border-[#7367f0]/40 px-4 py-3 text-white shadow-[0_8px_20px_rgba(115,103,240,0.24)]"
-          style={{ background: "linear-gradient(90deg,#7367f0,#5b8def)" }}
-        >
-          <div className="flex min-w-max items-center gap-6 text-sm font-semibold text-white/90">
-            <span className="text-base font-bold text-white">{selectedPatient.patientName}</span>
-            <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-bold uppercase text-red-700">{hasObservationInput ? riskLevel : "Vitals pending"}</span>
-            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">MR: {selectedPatient.mrn}</span>
-            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Age/Sex: {selectedPatient.ageGender}</span>
-            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Bed: {selectedPatient.bedNo}</span>
-            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Unit: {selectedPatient.unit}</span>
-            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Doctor: {selectedPatient.admittingDoctor}</span>
-            <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-xs text-white shadow-sm">Nurse: {recordedBy || selectedPatient.assignedWardNurse}</span>
-            <button
-              className="ml-auto inline-flex h-9 items-center justify-center rounded-xl border border-white/30 bg-white px-4 text-xs font-semibold text-[#7367f0] shadow-sm transition hover:bg-white/90"
-              onClick={() => window.history.back()}
-              type="button"
-            >
-              Back
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       <Card className="min-w-0 max-w-full overflow-hidden">
         <CardContent className="min-w-0 space-y-4 p-4">
           <div className="grid min-w-0 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
