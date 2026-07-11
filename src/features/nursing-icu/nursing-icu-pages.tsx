@@ -17456,7 +17456,7 @@ export function WardNursePatientEventUpdatePage() {
   return (
     <div className="min-w-0 max-w-full space-y-4 pb-8">
       {selectedPatient ? <WardNurseSelectedPatientHeader patient={selectedPatient} /> : null}
-      <div className="max-w-full rounded-md border border-slate-200 bg-white p-3 shadow-sm md:w-fit">
+      <div className="w-full max-w-full rounded-md border border-slate-200 bg-white p-3 shadow-sm">
         <div className="flex flex-col gap-3 md:flex-row md:items-end">
           <label className="block w-full space-y-1 text-sm md:w-[26rem]">
             <span className="font-semibold text-slate-800">Patient</span>
