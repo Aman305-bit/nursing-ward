@@ -15369,11 +15369,13 @@ function WardNursePatientContextSelector({
   label,
   onChange,
   patients,
+  placeholder,
   value,
 }: {
   label: string;
   onChange: (value: string) => void;
   patients: IcuPatient[];
+  placeholder?: string;
   value: string;
 }) {
   return (
@@ -15385,12 +15387,24 @@ function WardNursePatientContextSelector({
           onChange={(event) => onChange(event.target.value)}
           value={value}
         >
+          {placeholder ? <option value="">{placeholder}</option> : null}
           {patients.map((patient) => (
             <option key={patient.id} value={patient.id}>{patient.bedNo} - {patient.patientName}</option>
           ))}
         </select>
       </label>
     </div>
+  );
+}
+
+function WardNurseNoPatientSelected({ description, title }: { description: string; title: string }) {
+  return (
+    <Card className="border-dashed">
+      <CardContent className="flex min-h-40 flex-col items-center justify-center text-center">
+        <p className="text-base font-bold text-slate-950">{title}</p>
+        <p className="mt-2 max-w-xl text-sm font-medium text-slate-500">{description}</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -17324,7 +17338,17 @@ type IcuPatientEventRow = {
   tone: DashboardCellTone;
 };
 
-function IcuPatientEventsWorkspace({ initialFocus, patient, results }: { initialFocus: IcuEventFocus; patient: IcuPatient; results: IcuPatientResultRow[] }) {
+function IcuPatientEventsWorkspace({
+  hidePatientSelector = false,
+  initialFocus,
+  patient,
+  results,
+}: {
+  hidePatientSelector?: boolean;
+  initialFocus: IcuEventFocus;
+  patient: IcuPatient;
+  results: IcuPatientResultRow[];
+}) {
   const patientSelection = useWardNursePatientContext(patient);
   const activePatient = patientSelection.patient;
   const activeResults = activePatient.id === patient.id ? results : buildIcuPatientResultRows(activePatient);
@@ -17340,7 +17364,7 @@ function IcuPatientEventsWorkspace({ initialFocus, patient, results }: { initial
 
   return (
     <div className="space-y-4">
-      {patientSelection.selectable ? (
+      {patientSelection.selectable && !hidePatientSelector ? (
         <WardNursePatientContextSelector
           label="Patient"
           onChange={patientSelection.setPatientId}
@@ -17394,6 +17418,50 @@ function IcuPatientEventsWorkspace({ initialFocus, patient, results }: { initial
         {!filteredEvents.length ? <div className="p-6 text-center text-sm font-semibold text-slate-500">No patient event matched selected filters.</div> : null}
         {filteredEvents.length > ICU_COMMAND_PAGE_SIZE ? <IcuCommandPaginationControls {...pagination} /> : null}
       </div>
+    </div>
+  );
+}
+
+export function WardNursePatientEventUpdatePage() {
+  const activeWardNurse = getActiveWardNurseName();
+  const assignedPatients = React.useMemo(
+    () => icuPatients.filter((patient) => patient.assignedWardNurse === activeWardNurse),
+    [activeWardNurse],
+  );
+  const [patientId, setPatientId] = React.useState("");
+  const selectedPatient = assignedPatients.find((patient) => patient.id === patientId) ?? null;
+  const selectedResults = React.useMemo(
+    () => (selectedPatient ? buildIcuPatientResultRows(selectedPatient) : []),
+    [selectedPatient],
+  );
+
+  return (
+    <div className="min-w-0 max-w-full space-y-4 pb-8">
+      <PageHeader
+        eyebrow="Ward Nurse"
+        title="Patient Event Update"
+        description="Select an assigned patient to review event updates, alerts, vitals, medication, I/O, and pending actions."
+      />
+      <WardNursePatientContextSelector
+        label="Patient"
+        onChange={setPatientId}
+        patients={assignedPatients}
+        placeholder="Select patient"
+        value={patientId}
+      />
+      {selectedPatient ? (
+        <IcuPatientEventsWorkspace
+          hidePatientSelector
+          initialFocus="all"
+          patient={selectedPatient}
+          results={selectedResults}
+        />
+      ) : (
+        <WardNurseNoPatientSelected
+          title="No patient selected"
+          description="Please select a patient first. Patient event data will appear only after a patient is selected."
+        />
+      )}
     </div>
   );
 }
@@ -28653,17 +28721,102 @@ function dischargeDefaultBedRelease(destination: IcuDischargeDestination) {
 }
 
 function NursingNotes() {
-  const rows = [
-    { id: "note-001", type: "Critical event note", patient: "Aisha Khan", author: "Ward Nurse Kavita", time: "09:00", note: "Hypotension and low oxygen escalated to duty doctor.", attachment: "No" },
-    { id: "note-002", type: "Transfusion note", patient: "Rohan Das", author: "Ward Nurse Arjun", time: "09:20", note: "PRBC running, no reaction observed.", attachment: "No" },
-    { id: "note-003", type: "Instruction follow-up", patient: "Meera Sharma", author: "Ward Nurse Kavita", time: "10:00", note: "Hourly neuro checks continued.", attachment: "No" },
-  ];
+  const activeWardNurse = getActiveWardNurseName();
+  const assignedPatients = React.useMemo(
+    () => icuPatients.filter((patient) => patient.assignedWardNurse === activeWardNurse),
+    [activeWardNurse],
+  );
+  const [patientId, setPatientId] = React.useState("");
+  const selectedPatient = assignedPatients.find((patient) => patient.id === patientId) ?? null;
+  const rows = React.useMemo(
+    () => (selectedPatient ? buildWardNurseNursingNoteRows(selectedPatient) : []),
+    [selectedPatient],
+  );
+
   return (
     <div className="space-y-4">
-      <DateTimeFilterPanel title="Nursing Notes Date & Time Filter" compact />
-      <GenericTable title="Structured Nursing Notes" rows={rows} />
+      <WardNursePatientContextSelector
+        label="Patient"
+        onChange={setPatientId}
+        patients={assignedPatients}
+        placeholder="Select patient"
+        value={patientId}
+      />
+      {selectedPatient ? (
+        <>
+          <DateTimeFilterPanel title="Nursing Notes Date & Time Filter" compact />
+          <GenericTable title="Nursing Notes" rows={rows} />
+        </>
+      ) : (
+        <WardNurseNoPatientSelected
+          title="No patient selected"
+          description="Please select a patient first. Only nursing notes for the selected patient will be shown here."
+        />
+      )}
     </div>
   );
+}
+
+function buildWardNurseNursingNoteRows(patient: IcuPatient): Record<string, unknown>[] {
+  const vitalNotes = icuVitals
+    .filter((row) => row.patientId === patient.id)
+    .slice(-3)
+    .reverse()
+    .map((row) => ({
+      id: `vital-note-${row.id}`,
+      type: row.abnormal ? "Critical event note" : "Shift assessment",
+      patient: patient.patientName,
+      bed: patient.bedNo,
+      author: row.nurse,
+      time: row.time,
+      note: row.note,
+      status: row.abnormal ? "Needs follow-up" : "Signed",
+    }));
+
+  const taskNotes = icuTasks
+    .filter((row) => row.patientId === patient.id && row.assignedTo.toLowerCase().includes("nurse"))
+    .slice(0, 3)
+    .map((row) => ({
+      id: `task-note-${row.id}`,
+      type: "Instruction follow-up",
+      patient: patient.patientName,
+      bed: patient.bedNo,
+      author: row.assignedTo,
+      time: row.dueTime,
+      note: `${row.title}. ${row.remarks}`,
+      status: row.status,
+    }));
+
+  const medicationNotes = medicationRows
+    .filter((row) => row.patientId === patient.id)
+    .slice(0, 2)
+    .map((row) => ({
+      id: `med-note-${row.id}`,
+      type: "Medication note",
+      patient: patient.patientName,
+      bed: patient.bedNo,
+      author: row.administeredBy === "-" ? patient.assignedWardNurse : row.administeredBy,
+      time: row.scheduledTime,
+      note: `${row.medication} ${row.dose} ${row.route}. ${row.reason}`,
+      status: row.status,
+    }));
+
+  const ioNotes = intakeOutputRows
+    .filter((row) => row.patientId === patient.id && row.note)
+    .slice(-2)
+    .reverse()
+    .map((row) => ({
+      id: `io-note-${row.id}`,
+      type: "Intake / output note",
+      patient: patient.patientName,
+      bed: patient.bedNo,
+      author: row.nurse,
+      time: row.time,
+      note: row.note,
+      status: row.status,
+    }));
+
+  return [...vitalNotes, ...taskNotes, ...medicationNotes, ...ioNotes];
 }
 
 function AuditLogs() {

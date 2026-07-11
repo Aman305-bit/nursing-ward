@@ -157,16 +157,14 @@ export function DoctorOrdersPage({ patientId, locked: lockedFromRoute = false, m
     ? lockedPatientId
     : "";
   const locked = lockedFromRoute && Boolean(routePatientId);
-  const initialPatientId = routePatientId || assignedPatients[0]?.id || "";
+  const initialPatientId = routePatientId;
   const [selectedPatientId, setSelectedPatientId] = React.useState(initialPatientId);
   const [activeTab, setActiveTab] = React.useState<OrderTab["id"]>("blood");
   const [selectedOrderId, setSelectedOrderId] = React.useState<string | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (initialPatientId) {
-      setSelectedPatientId(initialPatientId);
-    }
+    setSelectedPatientId(initialPatientId);
   }, [initialPatientId]);
 
   const selectedPatient = assignedPatients.find((patient) => patient.id === selectedPatientId) ?? null;
