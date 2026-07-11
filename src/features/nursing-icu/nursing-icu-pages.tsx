@@ -28785,20 +28785,32 @@ function NursingNotes() {
     [activeWardNurse],
   );
   const [patientId, setPatientId] = React.useState("");
+  const [patientSearch, setPatientSearch] = React.useState("");
   const selectedPatient = assignedPatients.find((patient) => patient.id === patientId) ?? null;
+  const filteredPatients = React.useMemo(() => {
+    const query = patientSearch.trim().toLowerCase();
+    if (!query) return assignedPatients;
+    return assignedPatients.filter((patient) =>
+      [patient.patientName, patient.bedNo, patient.mrn, patient.ageGender]
+        .some((value) => value.toLowerCase().includes(query)),
+    );
+  }, [assignedPatients, patientSearch]);
 
   return (
     <div className="space-y-4">
-      <WardNursePatientContextSelector
-        label="Patient"
+      <WardNurseNotesPatientSelector
         onChange={setPatientId}
-        patients={assignedPatients}
-        placeholder="Select patient"
+        onSearchChange={setPatientSearch}
+        patients={filteredPatients}
+        search={patientSearch}
+        selectedPatient={selectedPatient}
         value={patientId}
       />
       {selectedPatient ? (
         <NotesPage
+          compactCategoryView
           forceCategoryView
+          hidePatientBanner
           lockedCategory="Nurse Notes"
           patientContext={{
             patientId: selectedPatient.id,
@@ -28816,6 +28828,62 @@ function NursingNotes() {
           description="Please select a patient first. Only nursing notes for the selected patient will be shown here."
         />
       )}
+    </div>
+  );
+}
+
+function WardNurseNotesPatientSelector({
+  onChange,
+  onSearchChange,
+  patients,
+  search,
+  selectedPatient,
+  value,
+}: {
+  onChange: (value: string) => void;
+  onSearchChange: (value: string) => void;
+  patients: IcuPatient[];
+  search: string;
+  selectedPatient: IcuPatient | null;
+  value: string;
+}) {
+  const patientOptions = React.useMemo(() => {
+    if (selectedPatient && !patients.some((patient) => patient.id === selectedPatient.id)) {
+      return [selectedPatient, ...patients];
+    }
+    return patients;
+  }, [patients, selectedPatient]);
+
+  return (
+    <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="block space-y-1 text-sm">
+          <span className="font-semibold text-slate-800">Patient search</span>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              className="pl-9"
+              onChange={(event) => onSearchChange(event.target.value)}
+              placeholder="Search patient, bed, MRN..."
+              value={search}
+            />
+          </div>
+        </label>
+        <label className="block space-y-1 text-sm">
+          <span className="font-semibold text-slate-800">Select patient</span>
+          <select
+            className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-sky-200"
+            onChange={(event) => onChange(event.target.value)}
+            value={value}
+          >
+            <option value="">Select patient</option>
+            {patientOptions.map((patient) => (
+              <option key={patient.id} value={patient.id}>{patient.bedNo} - {patient.patientName}</option>
+            ))}
+            {!patientOptions.length ? <option disabled>No patient found</option> : null}
+          </select>
+        </label>
+      </div>
     </div>
   );
 }

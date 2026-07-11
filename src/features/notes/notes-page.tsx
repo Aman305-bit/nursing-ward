@@ -380,7 +380,9 @@ export type NotesPatientContext = {
 };
 
 type NotesPageProps = {
+  compactCategoryView?: boolean;
   forceCategoryView?: boolean;
+  hidePatientBanner?: boolean;
   lockedCategory?: NoteCategory;
   patientContext?: NotesPatientContext;
 };
@@ -1186,7 +1188,7 @@ function priorityRank(priority: Note["priority"]) {
   return priority === "High" ? 0 : priority === "Medium" ? 1 : 2;
 }
 
-export function NotesPage({ forceCategoryView = false, lockedCategory, patientContext }: NotesPageProps = {}) {
+export function NotesPage({ compactCategoryView = false, forceCategoryView = false, hidePatientBanner = false, lockedCategory, patientContext }: NotesPageProps = {}) {
   const searchParams = useSearchParams();
   const [notes, setNotes] = React.useState<Note[]>(() => initialNotes.map(normalizeNote));
   const [notesLoaded, setNotesLoaded] = React.useState(false);
@@ -1435,25 +1437,27 @@ export function NotesPage({ forceCategoryView = false, lockedCategory, patientCo
 
   return (
     <div className="notes-select-safe min-w-0 space-y-4 py-4">
-      <section className="flex flex-col gap-3 border-b border-border pb-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary">{patientInitials}</div>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h1 className="text-lg font-semibold">{patientContext?.name ?? "John Doe"}</h1>
-              <Badge tone="info">{patientContext?.status ?? "Inpatient"}</Badge>
+      {!hidePatientBanner ? (
+        <section className="flex flex-col gap-3 border-b border-border pb-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary">{patientInitials}</div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h1 className="text-lg font-semibold">{patientContext?.name ?? "John Doe"}</h1>
+                <Badge tone="info">{patientContext?.status ?? "Inpatient"}</Badge>
+              </div>
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                MRN: {patientContext?.mrn ?? "10000098"} &nbsp; | &nbsp; {patientContext?.ageSex ?? "Male | 65 Y"}
+              </p>
             </div>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              MRN: {patientContext?.mrn ?? "10000098"} &nbsp; | &nbsp; {patientContext?.ageSex ?? "Male | 65 Y"}
-            </p>
           </div>
-        </div>
-        <div className="grid min-w-0 grid-cols-3 divide-x rounded-md border border-border bg-surface">
-          <PatientFact label="Allergies" value={patientContext?.allergies ?? "Penicillin, Peanuts"} tone="text-danger" />
-          <PatientFact label="Location" value={patientContext?.location ?? "ICU - 01, Bed 5"} tone="text-blue-600" />
-          <PatientFact label="Encounter" value={patientContext?.encounterId ?? "ENC123456789"} tone="text-emerald-600" />
-        </div>
-      </section>
+          <div className="grid min-w-0 grid-cols-3 divide-x rounded-md border border-border bg-surface">
+            <PatientFact label="Allergies" value={patientContext?.allergies ?? "Penicillin, Peanuts"} tone="text-danger" />
+            <PatientFact label="Location" value={patientContext?.location ?? "ICU - 01, Bed 5"} tone="text-blue-600" />
+            <PatientFact label="Encounter" value={patientContext?.encounterId ?? "ENC123456789"} tone="text-emerald-600" />
+          </div>
+        </section>
+      ) : null}
 
       {notice ? (
         <div className="flex items-center justify-between rounded-md border border-success/25 bg-success/10 px-3 py-2 text-xs text-success">
@@ -1470,6 +1474,7 @@ export function NotesPage({ forceCategoryView = false, lockedCategory, patientCo
           onNewNote={openNewNote}
           specialty={specialty}
           actions={tableActions}
+          compact={compactCategoryView}
         />
       ) : activeTab === "all" ? (
         <AllNotesOverview
@@ -1842,6 +1847,7 @@ function NotesFilterPanel(props: {
 function CategoryView({
   actions,
   category,
+  compact = false,
   notes,
   onNewNote,
   onShowAll,
@@ -1849,6 +1855,7 @@ function CategoryView({
 }: {
   actions: NoteTableActions;
   category: CategoryConfig;
+  compact?: boolean;
   notes: Note[];
   onNewNote: (category: NoteCategory, medicalNoteSection?: MedicalNoteSection) => void;
   onShowAll?: () => void;
@@ -1870,21 +1877,8 @@ function CategoryView({
 
   return (
     <Card className="overflow-hidden">
-      <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <span className={cn("flex h-9 w-9 items-center justify-center rounded-full", category.soft, category.accent)}>
-            <Icon className="h-4 w-4" />
-          </span>
-          <div>
-            <h3 className="text-sm font-semibold">{getCategoryDisplayLabel(category.label)}</h3>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 sm:ml-auto">
-          {onShowAll ? (
-            <Button size="sm" variant="outline" onClick={onShowAll}>
-              All Notes
-            </Button>
-          ) : null}
+      {compact ? (
+        <div className="flex justify-end border-b border-border px-4 py-3">
           <Button
             size="sm"
             onClick={() => {
@@ -1898,7 +1892,37 @@ function CategoryView({
             <Plus className="h-4 w-4" /> New Note
           </Button>
         </div>
-      </div>
+      ) : (
+        <div className="flex flex-col gap-3 border-b border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className={cn("flex h-9 w-9 items-center justify-center rounded-full", category.soft, category.accent)}>
+              <Icon className="h-4 w-4" />
+            </span>
+            <div>
+              <h3 className="text-sm font-semibold">{getCategoryDisplayLabel(category.label)}</h3>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 sm:ml-auto">
+            {onShowAll ? (
+              <Button size="sm" variant="outline" onClick={onShowAll}>
+                All Notes
+              </Button>
+            ) : null}
+            <Button
+              size="sm"
+              onClick={() => {
+                if (category.label === "Medical Notes") {
+                  setMedicalSectionChooserOpen(true);
+                  return;
+                }
+                onNewNote(category.label);
+              }}
+            >
+              <Plus className="h-4 w-4" /> New Note
+            </Button>
+          </div>
+        </div>
+      )}
       <div className="min-h-[420px] min-w-0">
         {category.label === "Medical Notes" ? (
           <div className="grid gap-3 border-b border-border bg-surface-muted/20 p-4 sm:grid-cols-2">
@@ -1946,6 +1970,7 @@ function CategoryView({
             })}
           </div>
         ) : null}
+        {!compact ? (
         <div className="flex items-center justify-between border-b border-border px-4 py-2">
           <span className="text-xs font-semibold">
             {category.label === "Medical Notes"
@@ -1956,6 +1981,7 @@ function CategoryView({
           </span>
           <span className="text-xs text-muted-foreground">{visibleNotes.length} notes</span>
         </div>
+        ) : null}
         {visibleNotes.length ? (
           <NotesTable actions={actions} notes={visibleNotes} compact />
         ) : (
